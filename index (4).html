@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#18222E">
+<title>ตรวจสอบภายใน RIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF1F4; --card:#FFFFFF; --ink:#18222E; --muted:#5B6876; --line:#D5DCE3; --soft:#F6F8FA;
+  --brand:#B5121B; --pass:#1E7A4C; --obs:#A3650A; --fail:#B5121B; --na:#7A8591;
+  --pass-bg:#E6F3EC; --obs-bg:#FBF0DD; --fail-bg:#FBE7E8; --na-bg:#EEF0F2;
+  --r:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#11171D; --card:#1A222B; --ink:#E7ECF1; --muted:#9AA6B2; --line:#2C3743; --soft:#212B35;
+    --brand:#E5484D; --pass:#4CC38A; --obs:#F0B44C; --fail:#F2666B; --na:#9AA6B2;
+    --pass-bg:#16301F; --obs-bg:#3A2B12; --fail-bg:#3B1A1C; --na-bg:#242D36;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 "IBM Plex Sans Thai","Sarabun","Leelawadee UI",Tahoma,sans-serif;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){.bar{background:#0B1015}}
+.bar .wrap{display:flex;align-items:center;gap:10px;min-height:54px}
+.bar h1{font-size:17px;font-weight:600;margin:0;flex:1;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar h1 small{display:block;font-size:12px;font-weight:400;opacity:.7}
+.back{background:none;border:0;color:#fff;font-size:22px;width:36px;height:36px;margin-left:-8px;border-radius:8px}
+.sync{font-size:12px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.12);white-space:nowrap;border:0;color:#fff}
+.sync.wait{background:#A3650A}
+.sync.err{background:#B5121B}
+
+.line-tip{background:var(--obs-bg);color:var(--ink);font-size:13px;padding:8px 14px;text-align:center}
+.line-tip a{color:var(--brand);font-weight:600}
+
+h2{font-size:20px;margin:22px 0 10px;font-weight:600;line-height:1.35}
+h3{font-size:15px;margin:22px 0 8px;font-weight:600;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:9px 14px;font-weight:500}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.block{width:100%}
+.btn.sm{padding:5px 10px;font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input.t,select.t,textarea.t{width:100%;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:9px 11px}
+textarea.t{min-height:64px;resize:vertical}
+
+/* tabs & chips */
+.seg{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px;margin:14px 0}
+.seg button{flex:1;border:0;background:none;border-radius:7px;padding:7px 4px;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 0 var(--line)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:4px 12px;font-size:13px;white-space:nowrap}
+.chip.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+
+/* round cards */
+.round{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
+.round .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.round b{font-size:17px}
+.prog{height:6px;background:var(--soft);border-radius:9px;overflow:hidden;margin:8px 0 6px;display:flex}
+.prog i{display:block;height:100%}
+.prog .p{background:var(--pass)} .prog .o{background:var(--obs)} .prog .x{background:var(--fail)} .prog .n{background:var(--na)}
+.tally{display:flex;gap:12px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.tally .p{color:var(--pass)} .tally .o{color:var(--obs)} .tally .x{color:var(--fail)}
+.tag{font-size:12px;padding:1px 8px;border-radius:99px;background:var(--soft);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.done{background:var(--pass-bg);color:var(--pass);border-color:transparent}
+.tag.hi{background:var(--fail-bg);color:var(--fail);border-color:transparent}
+.tag.mid{background:var(--obs-bg);color:var(--obs);border-color:transparent}
+.tag.lo{background:var(--pass-bg);color:var(--pass);border-color:transparent}
+
+/* stage list */
+.group{margin-top:18px}
+.group-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.group-h b{font-size:16px}
+.stage{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:11px 12px;margin-bottom:6px}
+.stage .go{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0}
+.stage .go span{display:block}
+.stage .ring{width:38px;height:38px;flex:none}
+.who{font-size:12px;color:var(--muted)}
+.who.me{color:var(--brand);font-weight:600}
+
+/* items */
+.topic{margin:22px 0 8px}
+.topic b{font-size:15px}
+.topic details{font-size:13px;color:var(--muted);margin-top:2px}
+.topic summary{cursor:pointer;color:var(--muted)}
+.topic dl{margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
+.topic dt{color:var(--muted)} .topic dd{margin:0;color:var(--ink)}
+.item{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:var(--r);padding:12px 12px 12px 13px;margin-bottom:8px}
+.item.lv-hi{border-left-color:var(--fail)} .item.lv-mid{border-left-color:var(--obs)} .item.lv-lo{border-left-color:var(--pass)}
+.item .txt{font-weight:500;padding-right:74px;min-height:24px}
+.item .meta{font-size:12.5px;color:var(--muted);margin-top:3px}
+.stamp{position:absolute;top:10px;right:10px;font-size:13px;font-weight:700;padding:1px 8px;border:2px double currentColor;border-radius:6px;transform:rotate(-7deg);letter-spacing:.02em;background:var(--card)}
+.stamp.pass{color:var(--pass)} .stamp.obs{color:var(--obs)} .stamp.fail{color:var(--fail)} .stamp.na{color:var(--na)}
+@media (prefers-reduced-motion:no-preference){.stamp.new{animation:thud .28s ease-out}}
+@keyframes thud{0%{transform:rotate(-7deg) scale(1.6);opacity:0}70%{transform:rotate(-7deg) scale(.94);opacity:1}100%{transform:rotate(-7deg) scale(1)}}
+.res{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.res button{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:8px 2px;font-size:13.5px;font-weight:500}
+.res button.on.pass{background:var(--pass);border-color:var(--pass);color:#fff}
+.res button.on.obs{background:var(--obs);border-color:var(--obs);color:#fff}
+.res button.on.fail{background:var(--fail);border-color:var(--fail);color:#fff}
+.res button.on.na{background:var(--na);border-color:var(--na);color:#fff}
+.more{margin-top:8px;display:none}
+.item.open .more{display:block}
+.more .two{display:grid;grid-template-columns:1fr 1.6fr;gap:8px}
+.foot{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;gap:8px}
+.foot .pend{color:var(--obs)}
+.need{color:var(--fail);font-size:12px}
+
+/* report */
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.kpi div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px;text-align:center}
+.kpi b{display:block;font-size:22px;line-height:1.2}
+.score-big{font-size:44px;font-weight:700;line-height:1}
+table.t{width:100%;border-collapse:collapse;font-size:14px;background:var(--card)}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+table.t th{font-weight:600;color:var(--muted);font-size:13px}
+table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+.find{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;break-inside:avoid}
+.find .h{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+
+.empty{text-align:center;padding:36px 12px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--card);padding:9px 16px;border-radius:9px;font-size:14px;z-index:50;max-width:90vw}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));z-index:15}
+.hide{display:none!important}
+
+@media print{
+  body{background:#fff;color:#000;padding:0}
+  .bar,.bottom,.noprint,.line-tip{display:none!important}
+  .find,.kpi div,.tbl{border-color:#bbb}
+}
+</style>
+</head>
+<body>
+<div id="lineTip" class="line-tip hide">เปิดจากแอป LINE อยู่ — <a id="lineLink" href="#">เปิดในเบราว์เซอร์</a> จะบันทึกได้เสถียรกว่า</div>
+<header class="bar"><div class="wrap">
+  <button class="back hide" id="backBtn" aria-label="ย้อนกลับ">‹</button>
+  <h1 id="title">ตรวจสอบภายใน RIS</h1>
+  <button class="sync hide" id="syncBtn" title="สถานะการบันทึก"></button>
+</div></header>
+<main class="wrap" id="app"></main>
+<div class="bottom hide" id="bottom"><div class="wrap" id="bottomInner"></div></div>
+
+<script>
+/* ============ ตั้งค่า ============ */
+const API_URL = '';   // วาง URL Web App ของ Apps Script (ลงท้าย /exec) ถ้าเว้นว่าง แอปจะถามตอนเข้าใช้ครั้งแรก
+const POLL_MS = 30000;
+/* ================================= */
+
+const RES = [
+  {v:'ผ่าน', c:'pass'}, {v:'ข้อสังเกต', c:'obs'}, {v:'ไม่ผ่าน', c:'fail'}, {v:'ไม่เกี่ยวข้อง', c:'na'}
+];
+const RC = Object.fromEntries(RES.map(r => [r.v, r.c]));
+const LV = {'มาก':'hi','ปานกลาง':'mid','น้อย':'lo'};
+
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+const S = {
+  cfg: LS.get('ris_cfg', {api: API_URL, pin:'', user:''}),
+  data: LS.get('ris_data', null),
+  queue: LS.get('ris_queue', []),
+  view: 'login', tab: 'rounds',
+  round: null, results: {}, claims: {},
+  stage: null, filter: 'all', stageFilter: 'all',
+  openItem: null, justStamped: null, syncing: false, syncErr: false
+};
+if (API_URL) S.cfg.api = API_URL;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const thDate = d => { if(!d) return ''; const x = new Date(String(d).length <= 10 ? d + 'T00:00:00' : d); return isNaN(x) ? d : x.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}); };
+const thTime = d => { const x = new Date(d); return isNaN(x) ? '' : x.toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); };
+const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+
+function toast(msg){ const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+
+async function api(action, params = {}){
+  if (!S.cfg.api) throw new Error('ยังไม่ได้ตั้ง URL ของ Apps Script');
+  const q = new URLSearchParams({action, pin: S.cfg.pin, user: S.cfg.user, ...params});
+  const r = await fetch(S.cfg.api + '?' + q.toString(), {redirect:'follow'});
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'เซิร์ฟเวอร์ตอบกลับผิดพลาด');
+  return j.data;
+}
+
+/* ---------- derived helpers ---------- */
+const items = () => S.data?.items || [];
+const stageName = code => { for (const g of S.data.groups) for (const s of g.stages) if (s.code === code) return s.name; return code; };
+const groupOfStage = code => S.data.groups.find(g => g.stages.some(s => s.code === code));
+const itemsOfStage = code => items().filter(i => i.stage === code);
+function tally(list){
+  const t = {total:list.length, done:0, pass:0, obs:0, fail:0, na:0, highFail:0};
+  list.forEach(i => { const r = S.results[i.id]?.result; if(!r) return; t.done++;
+    if (r === 'ผ่าน') t.pass++; else if (r === 'ข้อสังเกต') t.obs++; else if (r === 'ไม่ผ่าน'){ t.fail++; if(i.level === 'มาก') t.highFail++; } else t.na++; });
+  return t;
+}
+const score = t => { const d = t.pass + t.obs + t.fail; return d ? Math.round((t.pass + t.obs * .5) / d * 100) : null; };
+function progBar(t){
+  const w = n => t.total ? (n / t.total * 100) + '%' : '0';
+  return `<div class="prog" role="img" aria-label="ตรวจแล้ว ${t.done} จาก ${t.total}"><i class="p" style="width:${w(t.pass)}"></i><i class="o" style="width:${w(t.obs)}"></i><i class="x" style="width:${w(t.fail)}"></i><i class="n" style="width:${w(t.na)}"></i></div>`;
+}
+function ring(done, total){
+  const r = 15, c = 2 * Math.PI * r, p = total ? done / total : 0;
+  const col = p >= 1 ? 'var(--pass)' : 'var(--ink)';
+  return `<svg class="ring" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="${r}" fill="none" stroke="var(--line)" stroke-width="4"/><circle cx="19" cy="19" r="${r}" fill="none" stroke="${col}" stroke-width="4" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p)}" transform="rotate(-90 19 19)" stroke-linecap="round"/><text x="19" y="23" text-anchor="middle" font-size="10" fill="var(--muted)">${done}</text></svg>`;
+}
+
+/* ---------- offline queue ---------- */
+function enqueue(rec){
+  S.queue = S.queue.filter(q => !(q.round === rec.round && q.item === rec.item));
+  S.queue.push(rec); LS.set('ris_queue', S.queue); updateSync(); flush();
+}
+async function flush(){
+  if (S.syncing || !S.queue.length) return;
+  S.syncing = true; updateSync();
+  while (S.queue.length){
+    const rec = S.queue[0];
+    try { await api('save', rec); S.queue.shift(); S.syncErr = false; LS.set('ris_queue', S.queue); }
+    catch(e){ S.syncErr = true; break; }
+  }
+  S.syncing = false; updateSync();
+  if (S.syncErr) setTimeout(flush, 15000);
+}
+const pendingKeys = () => new Set(S.queue.map(q => q.round + '|' + q.item));
+function updateSync(){
+  const b = $('#syncBtn'); if (S.view === 'login'){ b.classList.add('hide'); return; }
+  b.classList.remove('hide','wait','err');
+  if (S.queue.length){ b.classList.add(S.syncErr ? 'err' : 'wait'); b.textContent = (S.syncErr ? 'ออฟไลน์ ' : 'กำลังส่ง ') + S.queue.length; }
+  else b.textContent = 'บันทึกแล้ว';
+}
+window.addEventListener('online', flush);
+
+/* ---------- data loading ---------- */
+async function loadInit(){
+  const d = await api('init');
+  S.data = d; LS.set('ris_data', d);
+}
+async function loadRound(silent){
+  if (!S.round) return;
+  try{
+    const d = await api('round', {round: S.round.round_id});
+    const pend = pendingKeys(); const local = S.results;
+    S.results = {};
+    d.results.forEach(r => S.results[r.item_id] = r);
+    // อย่าทับสิ่งที่ยังส่งไม่ถึงเซิร์ฟเวอร์
+    Object.values(local).forEach(r => { if (pend.has(S.round.round_id + '|' + r.item_id)) S.results[r.item_id] = r; });
+    S.claims = {}; d.claims.forEach(c => S.claims[c.stage] = c.auditor);
+    LS.set('ris_round_' + S.round.round_id, {results:S.results, claims:S.claims});
+    if (silent && S.openItem) return;  // ไม่ re-render ระหว่างพิมพ์
+    render();
+  }catch(e){ if(!silent) toast(e.message); }
+}
+let pollT = null;
+function startPoll(){ stopPoll(); pollT = setInterval(() => { if (document.visibilityState === 'visible') loadRound(true); }, POLL_MS); }
+function stopPoll(){ clearInterval(pollT); }
+
+/* ---------- navigation ---------- */
+function go(view, extra = {}){
+  Object.assign(S, extra, {view}); 
+  if (view === 'round' || view === 'stage') startPoll(); else stopPoll();
+  render(); window.scrollTo(0,0);
+}
+$('#backBtn').onclick = () => {
+  if (S.view === 'stage' || S.view === 'report') go('round', {openItem:null});
+  else if (S.view === 'round') { refreshRounds(); go('home'); }
+};
+$('#syncBtn').onclick = () => { if (S.queue.length) flush(); else toast('ทุกอย่างบันทึกลงชีตแล้ว'); };
+
+/* ---------- views ---------- */
+function render(){
+  const app = $('#app'), back = $('#backBtn'), title = $('#title'), bottom = $('#bottom');
+  bottom.classList.add('hide'); back.classList.toggle('hide', !['round','stage','report'].includes(S.view));
+  updateSync();
+  if (S.view === 'login') { title.innerHTML = 'ตรวจสอบภายใน RIS'; app.innerHTML = vLogin(); return; }
+  if (S.view === 'home') { title.innerHTML = `ตรวจสอบภายใน RIS<small>${esc(S.cfg.user)}</small>`; app.innerHTML = vHome(); return; }
+  const rd = S.round;
+  if (S.view === 'round') { title.innerHTML = `สาขา${esc(rd.branch)}<small>รอบตรวจ ${thDate(rd.date)}</small>`; app.innerHTML = vRound(); return; }
+  if (S.view === 'stage') { title.innerHTML = `${esc(stageName(S.stage))}<small>สาขา${esc(rd.branch)} ${thDate(rd.date)}</small>`; app.innerHTML = vStage(); renderStageBottom(); return; }
+  if (S.view === 'report') { title.innerHTML = `รายงานผลตรวจ<small>สาขา${esc(rd.branch)} ${thDate(rd.date)}</small>`; app.innerHTML = vReport(); return; }
+}
+
+function vLogin(){
+  return `<h2>เข้าใช้งานทีมตรวจ</h2>
+  <form class="panel" id="loginForm">
+    <label class="f" for="u">ชื่อผู้ตรวจ</label>
+    <input class="t" id="u" required autocomplete="name" value="${esc(S.cfg.user)}" placeholder="เช่น บดินทร์">
+    <label class="f" for="p">PIN ทีม</label>
+    <input class="t" id="p" required inputmode="numeric" type="password" value="${esc(S.cfg.pin)}">
+    ${API_URL ? '' : `<label class="f" for="a">URL ของ Apps Script (ลงท้าย /exec)</label>
+    <input class="t" id="a" required value="${esc(S.cfg.api)}" placeholder="https://script.google.com/macros/s/.../exec">`}
+    <div style="margin-top:14px"><button class="btn primary block" id="loginBtn">เข้าใช้งาน</button></div>
+  </form>`;
+}
+
+function refreshRounds(){ api('rounds').then(r => { S.data.rounds = r; LS.set('ris_data', S.data); if (S.view === 'home') render(); }).catch(()=>{}); }
+
+function vHome(){
+  const d = S.data;
+  const tabs = `<div class="seg" role="tablist">
+    <button class="${S.tab==='rounds'?'on':''}" data-tab="rounds">รอบตรวจ</button>
+    <button class="${S.tab==='overview'?'on':''}" data-tab="overview">ภาพรวมทุกสาขา</button></div>`;
+  const form = `<details class="panel" ${d.rounds.length ? '' : 'open'} style="margin-top:14px">
+    <summary style="cursor:pointer;font-weight:600">เปิดรอบตรวจใหม่</summary>
+    <div class="row" style="margin-top:10px;align-items:flex-end">
+      <div style="flex:1 1 160px"><label class="f" for="nb">สาขา</label>
+        <select class="t" id="nb">${d.branches.map(b => `<option>${esc(b)}</option>`).join('')}</select></div>
+      <div style="flex:1 1 140px"><label class="f" for="nd">วันที่ตรวจ</label><input class="t" type="date" id="nd" value="${today()}"></div>
+      <button class="btn primary" id="newRound" style="flex:0 0 auto">เปิดรอบตรวจ</button>
+    </div>
+    <p class="small muted" style="margin:8px 0 0">ถ้ามีคนเปิดสาขาและวันเดียวกันไว้แล้ว ระบบจะพาเข้ารอบเดิม ทุกคนในทีมจึงตรวจร่วมกันได้</p>
+  </details>`;
+  if (S.tab === 'overview') return tabs + vOverview();
+  const list = d.rounds.length ? d.rounds.map(r => {
+    const t = {...r.stats, total:r.total}; const sc = score(t);
+    return `<button class="round" data-round="${esc(r.round_id)}">
+      <div class="top"><b>สาขา${esc(r.branch)}</b><span class="tag ${r.status==='ปิดรอบแล้ว'?'done':''}">${esc(r.status)}</span></div>
+      <div class="small muted">${thDate(r.date)} เปิดโดย ${esc(r.created_by)}</div>
+      ${progBar(t)}
+      <div class="tally"><span>ตรวจ ${t.done}/${t.total}</span><span class="p">ผ่าน ${t.pass}</span><span class="o">ข้อสังเกต ${t.obs}</span><span class="x">ไม่ผ่าน ${t.fail}</span>
+      ${sc !== null ? `<span>คะแนน ${sc}%</span>` : ''}${t.highFail ? `<span class="tag hi">เสี่ยงมากไม่ผ่าน ${t.highFail}</span>` : ''}</div>
+    </button>`; }).join('') : `<div class="empty">ยังไม่มีรอบตรวจ เลือกสาขาและวันที่ด้านบนเพื่อเริ่ม</div>`;
+  return tabs + form + `<h3>รอบตรวจทั้งหมด</h3>` + list;
+}
+
+function vOverview(){
+  const d = S.data; const latest = {};
+  d.rounds.forEach(r => { if (!latest[r.branch] || r.date > latest[r.branch].date) latest[r.branch] = r; });
+  const rows = d.branches.map(b => {
+    const r = latest[b]; if (!r) return `<tr><td>${esc(b)}</td><td colspan="5" class="muted">ยังไม่เคยตรวจ</td></tr>`;
+    const t = {...r.stats, total:r.total}; const sc = score(t);
+    return `<tr><td><a href="#" data-round="${esc(r.round_id)}">${esc(b)}</a></td><td>${thDate(r.date)}</td><td class="n">${Math.round(t.done/t.total*100)}%</td>
+      <td class="n">${sc ?? '–'}${sc!==null?'%':''}</td><td class="n" style="color:var(--fail)">${t.fail}</td><td class="n">${t.highFail ? `<span class="tag hi">${t.highFail}</span>` : '0'}</td></tr>`;
+  }).join('');
+  return `<p class="small muted">ใช้รอบตรวจล่าสุดของแต่ละสาขา คะแนน = (ผ่าน + ข้อสังเกต×0.5) ÷ ข้อที่ประเมินได้</p>
+  <div class="tbl"><table class="t"><thead><tr><th>สาขา</th><th>ตรวจล่าสุด</th><th>ความคืบหน้า</th><th>คะแนน</th><th>ไม่ผ่าน</th><th>เสี่ยงมาก</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function vRound(){
+  const all = tally(items()); const sc = score(all);
+  const me = S.cfg.user;
+  const chips = [['all','ทุกส่วน'],['mine','ส่วนของฉัน'],['free','ยังไม่มีคนรับ'],['todo','ยังตรวจไม่ครบ']]
+    .map(([k,l]) => `<button class="chip ${S.filter===k?'on':''}" data-filter="${k}">${l}</button>`).join('');
+  const groups = S.data.groups.map(g => {
+    const st = g.stages.filter(s => {
+      const who = S.claims[s.code]; const t = tally(itemsOfStage(s.code));
+      if (!t.total) return false;
+      if (S.filter === 'mine') return who === me;
+      if (S.filter === 'free') return !who;
+      if (S.filter === 'todo') return t.done < t.total;
+      return true;
+    });
+    if (!st.length) return '';
+    const gt = tally(items().filter(i => i.group === g.code));
+    return `<section class="group"><div class="group-h"><b>${esc(g.name)}</b><span class="small muted">${gt.done}/${gt.total}</span></div>
+      ${g.code === 'D' ? '<p class="small muted" style="margin:-4px 0 8px">ทำจาก Google Drive ได้ก่อนลงสาขา</p>' : ''}
+      ${st.map(s => {
+        const t = tally(itemsOfStage(s.code)); const who = S.claims[s.code];
+        return `<div class="stage">${ring(t.done, t.total)}
+          <button class="go" data-stage="${s.code}"><span style="font-weight:500">${esc(s.name)}</span>
+          <span class="who ${who===me?'me':''}">${who ? (who===me ? 'คุณรับผิดชอบส่วนนี้' : 'ผู้ตรวจ: ' + esc(who)) : 'ยังไม่มีผู้รับผิดชอบ'} · ${t.done}/${t.total} ข้อ${t.fail ? ` · <span style="color:var(--fail)">ไม่ผ่าน ${t.fail}</span>` : ''}</span></button>
+          ${who === me ? `<button class="btn sm" data-unclaim="${s.code}">ปล่อย</button>` : !who ? `<button class="btn sm" data-claim="${s.code}">รับตรวจ</button>` : ''}
+        </div>`; }).join('')}</section>`;
+  }).join('');
+  return `<div class="panel" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between"><b>ตรวจแล้ว ${all.done} จาก ${all.total} ข้อ</b>${sc!==null?`<span>คะแนน ${sc}%</span>`:''}</div>
+      ${progBar(all)}
+      <div class="tally"><span class="p">ผ่าน ${all.pass}</span><span class="o">ข้อสังเกต ${all.obs}</span><span class="x">ไม่ผ่าน ${all.fail}</span><span>ไม่เกี่ยวข้อง ${all.na}</span></div>
+      <div class="row" style="margin-top:10px"><button class="btn sm" id="toReport">ดูรายงาน</button>
+      <button class="btn sm" id="toggleStatus">${S.round.status === 'ปิดรอบแล้ว' ? 'เปิดรอบอีกครั้ง' : 'ปิดรอบตรวจ'}</button>
+      <button class="btn sm" id="reload">ดึงข้อมูลล่าสุด</button></div>
+    </div>
+    <div class="chips" style="margin-top:14px">${chips}</div>${groups || '<div class="empty">ไม่มีส่วนที่ตรงกับตัวกรองนี้</div>'}`;
+}
+
+function vStage(){
+  const list = itemsOfStage(S.stage);
+  const pend = pendingKeys(); const me = S.cfg.user; const who = S.claims[S.stage];
+  const chips = [['all','ทั้งหมด'],['todo','ยังไม่ตรวจ'],['hi','ความเสี่ยงมาก'],['issue','ไม่ผ่าน/ข้อสังเกต']]
+    .map(([k,l]) => `<button class="chip ${S.stageFilter===k?'on':''}" data-sfilter="${k}">${l}</button>`).join('');
+  const shown = list.filter(i => {
+    const r = S.results[i.id]?.result;
+    if (S.stageFilter === 'todo') return !r;
+    if (S.stageFilter === 'hi') return i.level === 'มาก';
+    if (S.stageFilter === 'issue') return r === 'ไม่ผ่าน' || r === 'ข้อสังเกต';
+    return true;
+  });
+  let html = `<div class="row" style="margin-top:12px;justify-content:space-between">
+      <span class="who ${who===me?'me':''}">${who ? (who===me?'คุณรับผิดชอบส่วนนี้':'ผู้ตรวจ: '+esc(who)) : 'ยังไม่มีผู้รับผิดชอบ'}</span>
+      ${!who ? `<button class="btn sm" data-claim="${S.stage}">รับตรวจส่วนนี้</button>` : ''}</div>
+    <div class="chips" style="margin-top:8px">${chips}</div>`;
+  let lastTopic = null;
+  shown.forEach(i => {
+    if (i.topic !== lastTopic){
+      lastTopic = i.topic;
+      html += `<div class="topic"><b>${esc(i.topic)}</b><details><summary>เอกสารและปริมาณการตรวจ</summary><dl>
+        ${i.docs ? `<dt>เอกสาร</dt><dd>${esc(i.docs)}</dd>` : ''}<dt>วิธีตรวจ</dt><dd>${esc(i.method)}</dd>
+        ${i.sample ? `<dt>ปริมาณ</dt><dd>${esc(i.sample)}</dd>` : ''}</dl></details></div>`;
+    }
+    const r = S.results[i.id] || {};
+    const cls = r.result ? RC[r.result] : '';
+    const isPend = pend.has(S.round.round_id + '|' + i.id);
+    const open = S.openItem === i.id;
+    const needNote = (r.result === 'ไม่ผ่าน' || r.result === 'ข้อสังเกต') && !r.note;
+    html += `<article class="item ${i.level ? 'lv-' + LV[i.level] : ''} ${open ? 'open' : ''}" data-item="${esc(i.id)}">
+      ${r.result ? `<span class="stamp ${cls} ${S.justStamped===i.id?'new':''}">${esc(r.result)}</span>` : ''}
+      <div class="txt">${esc(i.text)}</div>
+      <div class="meta">${i.kind === 'จุดเสี่ยง' ? (i.level ? `<span class="tag ${LV[i.level]}">เสี่ยง${esc(i.level)}${i.legal ? ' ตามกฎหมาย' : ''}</span> ` : '<span class="tag">จุดเสี่ยง ยังไม่ประเมินระดับ</span> ') : ''}
+        ${i.impact ? 'ผลกระทบ: ' + esc(i.impact) : ''}${i.impact && i.action ? ' · ' : ''}${i.action ? 'แนวทาง: ' + esc(i.action) : ''}</div>
+      <div class="res">${RES.map(x => `<button class="${x.c} ${r.result===x.v?'on':''}" data-set="${x.v}" aria-pressed="${r.result===x.v}">${x.v}</button>`).join('')}</div>
+      <div class="more">
+        <label class="f">บันทึกสิ่งที่พบ${needNote ? ' <span class="need">ควรระบุเมื่อไม่ผ่านหรือมีข้อสังเกต</span>' : ''}</label>
+        <textarea class="t" data-field="note" placeholder="เช่น พบใบรับเงินชั่วคราวเลขที่ ... ไม่ลงสมุดคุม">${esc(r.note)}</textarea>
+        <div class="two"><div><label class="f">จำนวนที่ตรวจ</label><input class="t" data-field="sample" value="${esc(r.sample)}" placeholder="เช่น 12 ใบ"></div>
+        <div><label class="f">ลิงก์รูปหรือหลักฐาน</label><input class="t" data-field="link" value="${esc(r.link)}" placeholder="ลิงก์ Google Drive"></div></div>
+      </div>
+      <div class="foot"><span>${r.auditor ? 'ตรวจโดย ' + esc(r.auditor) + (r.updated_at ? ' ' + thTime(r.updated_at) : '') : ''}${isPend ? ' <span class="pend">รอส่ง</span>' : ''}</span>
+        <button class="btn sm" data-toggle="1">${open ? 'ย่อ' : (r.note ? 'ดูบันทึก' : 'เพิ่มบันทึก')}</button></div>
+    </article>`;
+  });
+  if (!shown.length) html += `<div class="empty">ไม่มีข้อที่ตรงกับตัวกรองนี้</div>`;
+  S.justStamped = null;
+  return html;
+}
+function renderStageBottom(){
+  const all = S.data.groups.flatMap(g => g.stages.map(s => s.code)).filter(c => itemsOfStage(c).length);
+  const idx = all.indexOf(S.stage); const next = all[idx + 1];
+  const t = tally(itemsOfStage(S.stage));
+  $('#bottomInner').innerHTML = `<div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+    <span class="small"><b>${t.done}/${t.total}</b> ข้อในส่วนนี้</span>
+    ${next ? `<button class="btn primary" data-stage="${next}">ถัดไป: ${esc(stageName(next))}</button>` : `<button class="btn primary" id="backRound">กลับภาพรวม</button>`}</div>`;
+  $('#bottom').classList.remove('hide');
+}
+
+function vReport(){
+  const all = tally(items()); const sc = score(all);
+  const auditors = [...new Set(Object.values(S.results).map(r => r.auditor).filter(Boolean))];
+  const gRows = S.data.groups.map(g => { const t = tally(items().filter(i => i.group === g.code)); const s = score(t);
+    return `<tr><td>${esc(g.name)}</td><td class="n">${t.done}/${t.total}</td><td class="n">${t.pass}</td><td class="n">${t.obs}</td><td class="n">${t.fail}</td><td class="n">${s ?? '–'}${s!==null?'%':''}</td></tr>`; }).join('');
+  const finds = items().filter(i => ['ไม่ผ่าน','ข้อสังเกต'].includes(S.results[i.id]?.result))
+    .sort((a,b) => (S.results[a.id].result === 'ไม่ผ่าน' ? 0 : 1) - (S.results[b.id].result === 'ไม่ผ่าน' ? 0 : 1) || b.score - a.score);
+  return `<div class="row noprint" style="margin-top:12px"><button class="btn sm" onclick="window.print()">พิมพ์ / บันทึกเป็น PDF</button></div>
+  <h2>สาขา${esc(S.round.branch)} ตรวจวันที่ ${thDate(S.round.date)}</h2>
+  <p class="small muted">ผู้ตรวจ: ${auditors.map(esc).join(', ') || '–'}</p>
+  <div class="panel row" style="justify-content:space-between"><div><div class="score-big">${sc ?? '–'}${sc!==null?'%':''}</div><div class="small muted">คะแนนการควบคุม</div></div>
+    <div style="flex:1;min-width:160px">${progBar(all)}<div class="small muted">ตรวจแล้ว ${all.done} จาก ${all.total} ข้อ</div></div></div>
+  <div class="kpi"><div><b style="color:var(--pass)">${all.pass}</b>ผ่าน</div><div><b style="color:var(--obs)">${all.obs}</b>ข้อสังเกต</div><div><b style="color:var(--fail)">${all.fail}</b>ไม่ผ่าน</div><div><b>${all.highFail}</b>เสี่ยงมาก ไม่ผ่าน</div></div>
+  <h3>แยกตามกลุ่มการตรวจ</h3>
+  <div class="tbl"><table class="t"><thead><tr><th>กลุ่ม</th><th>ตรวจ</th><th>ผ่าน</th><th>สังเกต</th><th>ไม่ผ่าน</th><th>คะแนน</th></tr></thead><tbody>${gRows}</tbody></table></div>
+  <h3>ประเด็นที่พบ (${finds.length})</h3>
+  ${finds.map(i => { const r = S.results[i.id]; return `<div class="find"><div class="h"><b>${esc(i.text)}</b><span class="stamp ${RC[r.result]}" style="position:static;flex:none">${esc(r.result)}</span></div>
+    <div class="small muted">${esc(i.topic)} · ${esc(stageName(i.stage))}${i.level ? ` · <span class="tag ${LV[i.level]}">เสี่ยง${esc(i.level)}</span>` : ''}</div>
+    ${r.note ? `<div style="margin-top:4px">${esc(r.note)}</div>` : '<div class="need">ยังไม่ได้บันทึกสิ่งที่พบ</div>'}
+    ${i.action ? `<div class="small muted">แนวทางแก้ไข: ${esc(i.action)}</div>` : ''}
+    <div class="small muted">ตรวจโดย ${esc(r.auditor)}${r.sample ? ' · จำนวนที่ตรวจ ' + esc(r.sample) : ''}${r.link ? ` · <a href="${esc(r.link)}" target="_blank" rel="noopener">หลักฐาน</a>` : ''}</div></div>`; }).join('') || '<div class="empty">ไม่มีประเด็นที่ไม่ผ่านหรือข้อสังเกต</div>'}`;
+}
+
+/* ---------- actions ---------- */
+async function openRound(id){
+  const r = S.data.rounds.find(x => x.round_id === id) || {round_id:id, branch:id.split('-').slice(1).join('-'), date:id.slice(0,4)+'-'+id.slice(4,6)+'-'+id.slice(6,8), status:'กำลังตรวจ'};
+  const cached = LS.get('ris_round_' + id, null);
+  S.results = cached?.results || {}; S.claims = cached?.claims || {};
+  go('round', {round:r, filter:'all'});
+  loadRound();
+}
+function setResult(itemId, patch){
+  const prev = S.results[itemId] || {item_id:itemId};
+  const rec = {...prev, ...patch, item_id:itemId, auditor:S.cfg.user, updated_at:new Date().toISOString()};
+  S.results[itemId] = rec;
+  enqueue({round:S.round.round_id, item:itemId, result:rec.result || '', note:rec.note || '', sample:rec.sample || '', link:rec.link || ''});
+}
+async function claim(stage, user){
+  S.claims[stage] = user; render();
+  try { await api('claim', {round:S.round.round_id, stage, user}); toast(user ? 'รับตรวจส่วนนี้แล้ว' : 'ปล่อยส่วนนี้แล้ว'); }
+  catch(e){ toast(e.message); loadRound(); }
+}
+
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'loginForm') return;
+  e.preventDefault();
+  S.cfg.user = $('#u').value.trim(); S.cfg.pin = $('#p').value.trim();
+  if (!API_URL) S.cfg.api = $('#a').value.trim();
+  const btn = $('#loginBtn'); btn.disabled = true; btn.textContent = 'กำลังโหลดรายการตรวจ...';
+  try { await loadInit(); LS.set('ris_cfg', S.cfg); go('home'); flush(); }
+  catch(err){ btn.disabled = false; btn.textContent = 'เข้าใช้งาน'; toast(err.message === 'Failed to fetch' ? 'เชื่อมต่อ Apps Script ไม่ได้ ตรวจ URL และการ Deploy' : err.message); }
+});
+
+document.addEventListener('click', async e => {
+  const t = e.target.closest('button, a'); if (!t) return;
+  const d = t.dataset;
+  if (d.tab){ S.tab = d.tab; render(); return; }
+  if (d.round){ e.preventDefault(); openRound(d.round); return; }
+  if (d.filter){ S.filter = d.filter; render(); return; }
+  if (d.sfilter){ S.stageFilter = d.sfilter; S.openItem = null; render(); return; }
+  if (d.stage){ go('stage', {stage:d.stage, stageFilter:'all', openItem:null}); return; }
+  if (d.claim){ claim(d.claim, S.cfg.user); return; }
+  if (d.unclaim){ claim(d.unclaim, ''); return; }
+  if (t.id === 'backRound'){ go('round'); return; }
+  if (t.id === 'toReport'){ go('report'); return; }
+  if (t.id === 'reload'){ loadRound(); toast('ดึงข้อมูลล่าสุดแล้ว'); return; }
+  if (t.id === 'toggleStatus'){
+    const st = S.round.status === 'ปิดรอบแล้ว' ? 'กำลังตรวจ' : 'ปิดรอบแล้ว';
+    if (st === 'ปิดรอบแล้ว' && !confirm('ปิดรอบตรวจนี้? ยังแก้ผลได้ภายหลัง')) return;
+    try { await api('setStatus', {round:S.round.round_id, status:st}); S.round.status = st; render(); toast(st); } catch(err){ toast(err.message); }
+    return;
+  }
+  if (t.id === 'newRound'){
+    t.disabled = true;
+    try {
+      const r = await api('createRound', {branch:$('#nb').value, date:$('#nd').value});
+      S.data.rounds = await api('rounds'); LS.set('ris_data', S.data);
+      if (r.existed) toast('มีรอบนี้อยู่แล้ว พาเข้ารอบเดิม');
+      openRound(r.round_id);
+    } catch(err){ toast(err.message); t.disabled = false; }
+    return;
+  }
+  const art = t.closest('.item');
+  if (art){
+    const id = art.dataset.item;
+    if (d.set){
+      const cur = S.results[id]?.result;
+      const val = cur === d.set ? '' : d.set;
+      setResult(id, {result:val});
+      S.justStamped = val ? id : null;
+      if (val === 'ไม่ผ่าน' || val === 'ข้อสังเกต') S.openItem = id;
+      render();
+      if (S.openItem === id && val && !S.results[id].note) setTimeout(() => document.querySelector(`.item[data-item="${CSS.escape(id)}"] textarea`)?.focus(), 50);
+      return;
+    }
+    if (d.toggle){ S.openItem = S.openItem === id ? null : id; render(); return; }
+  }
+});
+
+let typeT = null;
+document.addEventListener('input', e => {
+  const f = e.target.dataset.field; if (!f) return;
+  const id = e.target.closest('.item').dataset.item;
+  S.results[id] = {...(S.results[id] || {item_id:id}), [f]: e.target.value};
+  clearTimeout(typeT);
+  typeT = setTimeout(() => setResult(id, {[f]: e.target.value}), 700);
+});
+
+/* ---------- boot ---------- */
+(function boot(){
+  if (/\bLine\//i.test(navigator.userAgent)){
+    const u = new URL(location.href); u.searchParams.set('openExternalBrowser','1');
+    $('#lineLink').href = u.toString(); $('#lineTip').classList.remove('hide');
+  }
+  if (S.data && S.cfg.pin && S.cfg.user && S.cfg.api){
+    go('home');
+    loadInit().then(() => { if (S.view === 'home') render(); }).catch(() => toast('ใช้ข้อมูลที่เก็บไว้ในเครื่อง (ออฟไลน์)'));
+    flush();
+  } else go('login');
+})();
+</script>
+</body>
+</html>

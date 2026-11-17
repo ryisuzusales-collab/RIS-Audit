@@ -170,6 +170,26 @@ table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
 .find .h{display:flex;gap:10px;align-items:flex-start}
 .find .h b{flex:1}
 
+/* settings */
+.gear{background:none;border:0;color:#fff;width:36px;height:36px;border-radius:8px;display:grid;place-items:center;margin-right:-6px}
+.gear svg{width:22px;height:22px}
+.adm-bar{display:grid;grid-template-columns:1fr;gap:8px;margin-top:4px}
+@media (min-width:560px){.adm-bar{grid-template-columns:1.3fr 1fr}}
+.adm-list{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:0 12px;margin-top:8px}
+.adm-list .topic{margin:14px 0 2px;font-size:13px;color:var(--muted)}
+.adm-item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 0}
+.adm-item:last-child{border-bottom:0}
+.adm-item .k{display:block;font-size:12px;color:var(--muted)}
+.adm-item.off{opacity:.5}
+.adm-item.off .t1{text-decoration:line-through}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form .three{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;padding:9px 0}
+.check input{width:18px;height:18px;accent-color:var(--brand)}
+.preview{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:13.5px;color:var(--muted)}
+.btn.danger{color:var(--fail);border-color:var(--fail)}
+.note{font-size:13px;color:var(--muted);background:var(--soft);border-radius:8px;padding:8px 10px;margin-top:10px}
+
 .empty{text-align:center;padding:36px 12px;color:var(--muted)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--card);padding:9px 16px;border-radius:9px;font-size:14px;z-index:60;max-width:90vw}
 .bottom{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));z-index:15}
@@ -189,6 +209,7 @@ table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
   <button class="back hide" id="backBtn" aria-label="ย้อนกลับ">‹</button>
   <h1 id="title">ตรวจสอบภายใน RIS</h1>
   <button class="sync hide" id="syncBtn" title="สถานะการบันทึก"></button>
+  <button class="gear hide" id="gearBtn" aria-label="ตั้งค่า" title="ตั้งค่า"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 </div></header>
 <main class="wrap" id="app"></main>
 <div class="bottom hide" id="bottom"><div class="wrap" id="bottomInner"></div></div>
@@ -220,7 +241,8 @@ const S = {
   round: null, results: {}, claims: {},
   stage: null, filter: 'all', stageFilter: 'all',
   openItem: null, justStamped: null, syncing: false, syncErr: false,
-  sheetItem: null
+  sheetItem: null,
+  adminPin: '', admin: null, setTab: 'items', setStage: null, setQuery: ''
 };
 if (API_URL) S.cfg.api = API_URL;
 
@@ -237,6 +259,22 @@ async function api(action, params = {}){
   const q = new URLSearchParams({action, pin: S.cfg.pin, user: S.cfg.user, ...params});
   const r = await fetch(S.cfg.api + '?' + q.toString(), {redirect:'follow'});
   const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'เซิร์ฟเวอร์ตอบกลับผิดพลาด');
+  return j.data;
+}
+
+/* เมนูตั้งค่าส่ง POST แบบ text/plain (ข้อความยาวเกิน URL) ถ้าเครือข่ายไม่ยอม ถอยไปใช้ GET */
+async function apiPost(action, extra = {}){
+  const payload = {action, pin: S.cfg.pin, user: S.cfg.user, adminPin: S.adminPin, ...extra};
+  let j;
+  try {
+    const r = await fetch(S.cfg.api, {method:'POST', body: JSON.stringify(payload), redirect:'follow'});
+    j = await r.json();
+  } catch (e) {
+    const q = new URLSearchParams(Object.fromEntries(Object.entries(payload).map(([k,v]) => [k, typeof v === 'object' ? JSON.stringify(v) : v])));
+    const r = await fetch(S.cfg.api + '?' + q.toString(), {redirect:'follow'});
+    j = await r.json();
+  }
   if (!j.ok) throw new Error(j.error || 'เซิร์ฟเวอร์ตอบกลับผิดพลาด');
   return j.data;
 }
@@ -337,15 +375,19 @@ function go(view, extra = {}){
 $('#backBtn').onclick = () => {
   if (S.view === 'stage' || S.view === 'report') go('round', {openItem:null});
   else if (S.view === 'round') { refreshRounds(); go('home'); }
+  else if (S.view === 'settings') { go('home'); loadInit().then(() => { if (S.view === 'home') render(); }).catch(() => {}); }
 };
+$('#gearBtn').onclick = () => openSettings();
 $('#syncBtn').onclick = () => { if (S.queue.length) flush(); else toast('ทุกอย่างบันทึกลงชีตแล้ว'); };
 
 /* ---------- views ---------- */
 function render(){
   const app = $('#app'), back = $('#backBtn'), title = $('#title');
-  $('#bottom').classList.add('hide'); back.classList.toggle('hide', !['round','stage','report'].includes(S.view));
+  $('#bottom').classList.add('hide'); back.classList.toggle('hide', !['round','stage','report','settings'].includes(S.view));
+  $('#gearBtn').classList.toggle('hide', S.view !== 'home');
   updateSync();
   if (S.view === 'login') { title.innerHTML = 'ตรวจสอบภายใน RIS'; app.innerHTML = vLogin(); return; }
+  if (S.view === 'settings') { title.innerHTML = 'ตั้งค่า<small>สิ่งที่ต้องตรวจ ขั้นตอน และสาขา</small>'; app.innerHTML = vSettings(); renderAdmList(); return; }
   if (S.view === 'home') { title.innerHTML = `ตรวจสอบภายใน RIS<small>${esc(S.cfg.user)}</small>`; app.innerHTML = vHome(); return; }
   const rd = S.round;
   if (S.view === 'round') { title.innerHTML = `สาขา${esc(rd.branch)}<small>รอบตรวจ ${thDate(rd.date)}</small>`; app.innerHTML = vRound(); return; }
@@ -464,8 +506,10 @@ function vStage(){
       <span class="row">${!who ? `<button class="btn sm" data-claim="${S.stage}">รับตรวจส่วนนี้</button>` : ''}
       <button class="btn sm" data-info="${S.stage}">ส่วนนี้ตรวจอะไรบ้าง</button></span></div>
     <div class="chips" style="margin-top:8px">${chips}</div>`;
+  // จัดข้อที่หัวข้อเดียวกันไว้ด้วยกัน (ข้อที่เพิ่มจากเมนูตั้งค่าอาจอยู่ท้ายชีต)
+  const byTopic = new Map(); shown.forEach(i => { if (!byTopic.has(i.topic)) byTopic.set(i.topic, []); byTopic.get(i.topic).push(i); });
   let lastTopic = null;
-  shown.forEach(i => {
+  [...byTopic.values()].flat().forEach(i => {
     if (i.topic !== lastTopic){ lastTopic = i.topic; html += `<div class="topic">${esc(i.topic)}</div>`; }
     const r = S.results[i.id] || {};
     const cls = r.result ? RC[r.result] : '';
@@ -585,6 +629,169 @@ function scoreSheet(){
       <p class="muted small" style="margin-top:4px">ตัวอย่าง: ไม่ผ่านข้อเสี่ยง 9 ทำให้คะแนนลดมากกว่าไม่ผ่านข้อเสี่ยง 2 ประมาณ 4 เท่า</p></div>`);
 }
 
+/* ---------- เมนูตั้งค่า ---------- */
+const adm = () => S.admin || {items:[], groups:[], branches:[]};
+const admStages = () => adm().groups.flatMap(g => g.stages.map(s => ({...s, group:g.code, groupName:g.name})));
+const admStage = code => admStages().find(s => s.code === code) || {code, name:code};
+const admScore = (lik, sev, legal) => { const sc = S.data?.scoring || {legalBonus:5, high:6, mid:3};
+  const s = lik * sev + (legal ? sc.legalBonus : 0);
+  return {score:s, level: s === 0 ? '' : s >= sc.high ? 'มาก' : s >= sc.mid ? 'ปานกลาง' : 'น้อย'}; };
+
+function openSettings(){
+  if (S.adminPin) { loadAdmin().then(() => go('settings')).catch(e => toast(e.message)); return; }
+  openSheet('<small>ต้องใช้รหัสตั้งค่า</small><b>เข้าเมนูตั้งค่า</b>', `<form id="adminForm" style="margin-top:12px">
+    <label class="f" for="adminPinIn">รหัสตั้งค่า</label>
+    <input class="t" id="adminPinIn" type="password" inputmode="numeric" autocomplete="off" required>
+    <button class="btn primary block" id="adminGo" style="margin-top:12px">เข้าสู่การตั้งค่า</button></form>`);
+  setTimeout(() => $('#adminPinIn')?.focus(), 80);
+}
+async function loadAdmin(){
+  S.admin = await apiPost('adminData');
+  if (!S.setStage || !admStages().some(s => s.code === S.setStage)) S.setStage = admStages()[0]?.code;
+}
+async function admSave(action, extra, msg){
+  const btn = sheet.querySelector('.sh-f .btn.primary'); if (btn) { btn.disabled = true; btn.textContent = 'กำลังบันทึก...'; }
+  try { await apiPost(action, extra); await loadAdmin(); closeSheet(); render(); toast(msg); return true; }
+  catch (e) { toast(e.message); if (btn) { btn.disabled = false; btn.textContent = 'บันทึก'; } return false; }
+}
+
+function vSettings(){
+  const tabs = `<div class="seg" role="tablist">
+    <button class="${S.setTab==='items'?'on':''}" data-settab="items">สิ่งที่ต้องตรวจ</button>
+    <button class="${S.setTab==='stages'?'on':''}" data-settab="stages">ขั้นตอน</button>
+    <button class="${S.setTab==='branches'?'on':''}" data-settab="branches">สาขา</button></div>`;
+  if (S.setTab === 'stages') return tabs + vSetStages();
+  if (S.setTab === 'branches') return tabs + vSetBranches();
+  const opts = adm().groups.map(g => `<optgroup label="${esc(g.name)}">${g.stages.map(s =>
+    `<option value="${s.code}" ${s.code===S.setStage?'selected':''}>${esc(s.name)} (${adm().items.filter(i => i.stage===s.code && i.active).length})</option>`).join('')}</optgroup>`).join('');
+  return tabs + `<div class="adm-bar">
+      <select class="t" id="admStage" aria-label="ขั้นตอน">${opts}</select>
+      <input class="t" id="admQ" type="search" placeholder="ค้นหาทุกขั้นตอน" value="${esc(S.setQuery)}">
+    </div>
+    <div class="row" style="margin-top:10px;justify-content:space-between">
+      <span class="small muted" id="admCount"></span>
+      <button class="btn primary sm" data-additem="1">+ เพิ่มสิ่งที่ต้องตรวจ</button></div>
+    <div id="admList"></div>
+    <p class="note">แตะรายการเพื่อแก้ไข ข้อที่ปิดใช้งานจะไม่ขึ้นในหน้าตรวจ แต่ผลตรวจเดิมยังอยู่ ทุกคนจะเห็นรายการใหม่เมื่อเปิดแอปหรือกด "ดึงข้อมูลล่าสุด"</p>`;
+}
+function renderAdmList(){
+  const box = $('#admList'); if (!box) return;
+  const q = S.setQuery.trim().toLowerCase();
+  const list = q ? adm().items.filter(i => (i.text + ' ' + i.topic + ' ' + (i.howto||'')).toLowerCase().includes(q))
+                 : adm().items.filter(i => i.stage === S.setStage);
+  const on = list.filter(i => i.active).length;
+  $('#admCount').textContent = q ? `พบ ${list.length} ข้อ` : `ใช้งาน ${on} ข้อ${list.length > on ? ` · ปิดใช้งาน ${list.length - on}` : ''}`;
+  if (!list.length) { box.innerHTML = `<div class="empty">${q ? 'ไม่พบรายการที่ค้นหา' : 'ขั้นตอนนี้ยังไม่มีสิ่งที่ต้องตรวจ'}</div>`; return; }
+  const byTopic = new Map(); list.forEach(i => { if (!byTopic.has(i.topic)) byTopic.set(i.topic, []); byTopic.get(i.topic).push(i); });
+  box.innerHTML = `<div class="adm-list">${[...byTopic].map(([t, arr]) => `<div class="topic">${esc(t)}</div>` + arr.map(i =>
+    `<button class="adm-item ${i.active ? '' : 'off'}" data-edit="${esc(i.id)}">${i.kind === 'จุดเสี่ยง' ? riskBox(i) : '<span class="risk un">✓</span>'}
+      <span><span class="t1">${esc(i.text)}</span><span class="k">${esc(i.kind)}${i.active ? '' : ' · ปิดใช้งาน'}${q ? ' · ' + esc(admStage(i.stage).name) : ''}</span></span></button>`).join('')).join('')}</div>`;
+}
+
+function itemForm(id){
+  const i = id ? adm().items.find(x => x.id === id) : null;
+  const st = i ? i.stage : S.setStage;
+  const sameStage = adm().items.filter(x => x.stage === st);
+  const d = i || {kind:'จุดเสี่ยง', stage:st, topic: sameStage.length ? sameStage[sameStage.length-1].topic : '', text:'', howto:'', docs:'', sample:'',
+    method:'ตรวจที่สาขา', lik:0, sev:0, legal:false, impact:'', action:'', active:true};
+  const topics = [...new Set(adm().items.map(x => x.topic).filter(Boolean))];
+  const lvOpt = v => [0,1,2,3].map(n => `<option value="${n}" ${+v===n?'selected':''}>${n ? `${LIK[n]} (${n})` : 'ยังไม่ประเมิน'}</option>`).join('');
+  const stOpt = adm().groups.map(g => `<optgroup label="${esc(g.name)}">${g.stages.map(s => `<option value="${s.code}" ${s.code===d.stage?'selected':''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('');
+  const body = `<form class="form" id="itemForm" data-id="${esc(id || '')}">
+    <div class="two">
+      <div><label class="f" for="fKind">ประเภท</label><select class="t" id="fKind">
+        <option ${d.kind==='จุดเสี่ยง'?'selected':''}>จุดเสี่ยง</option><option ${d.kind!=='จุดเสี่ยง'?'selected':''}>หัวข้อตรวจ</option></select></div>
+      <div><label class="f" for="fMethod">ตรวจที่</label><select class="t" id="fMethod">
+        <option ${d.method!=='Google Drive'?'selected':''}>ตรวจที่สาขา</option><option ${d.method==='Google Drive'?'selected':''}>Google Drive</option></select></div>
+    </div>
+    <label class="f" for="fStage">ขั้นตอน</label><select class="t" id="fStage">${stOpt}</select>
+    <label class="f" for="fTopic">หัวข้อ (พิมพ์ใหม่หรือเลือกของเดิม)</label>
+    <input class="t" id="fTopic" list="topicList" value="${esc(d.topic)}"><datalist id="topicList">${topics.map(t => `<option value="${esc(t)}">`).join('')}</datalist>
+    <label class="f" for="fText">สิ่งที่ตรวจ / จุดเสี่ยง *</label>
+    <textarea class="t" id="fText" required style="min-height:56px">${esc(d.text)}</textarea>
+    <label class="f" for="fHow">ตรวจอย่างไร (บรรทัดละขั้น)</label>
+    <textarea class="t" id="fHow" style="min-height:96px">${esc(d.howto)}</textarea>
+    <label class="f" for="fDocs">เอกสารที่ใช้</label><input class="t" id="fDocs" value="${esc(d.docs)}">
+    <label class="f" for="fSample">ปริมาณการตรวจ</label><input class="t" id="fSample" value="${esc(d.sample)}" placeholder="เช่น ย้อนหลัง 3 เดือน สุ่ม 10%">
+    <div id="riskFields">
+      <div class="three">
+        <div><label class="f" for="fLik">โอกาสเกิด</label><select class="t" id="fLik">${lvOpt(d.lik)}</select></div>
+        <div><label class="f" for="fSev">ความรุนแรง</label><select class="t" id="fSev">${lvOpt(d.sev)}</select></div>
+        <label class="check"><input type="checkbox" id="fLegal" ${d.legal?'checked':''}> กฎหมาย</label>
+      </div>
+      <div class="preview" id="fPreview"></div>
+      <label class="f" for="fImpact">ผลกระทบ</label><input class="t" id="fImpact" value="${esc(d.impact)}">
+      <label class="f" for="fAction">แนวทางแก้ไข</label><input class="t" id="fAction" value="${esc(d.action)}">
+    </div>
+    <label class="check" style="margin-top:6px"><input type="checkbox" id="fActive" ${d.active?'checked':''}> ใช้งานข้อนี้ (เอาออกเพื่อปิด ไม่ต้องตรวจแล้ว)</label>
+  </form>`;
+  const foot = `<div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+    ${id ? '<button class="btn danger" data-delitem="1">ลบ</button>' : '<span></span>'}
+    <button class="btn primary" data-saveitem="1" style="min-width:120px">บันทึก</button></div>`;
+  openSheet(`<small>${id ? 'แก้ไข' : 'เพิ่มใหม่'} · ${esc(admStage(d.stage).name)}</small><b>${id ? esc(d.text) : 'สิ่งที่ต้องตรวจใหม่'}</b>`, body, foot);
+  updatePreview();
+}
+function updatePreview(){
+  const f = $('#itemForm'); if (!f) return;
+  const isRisk = $('#fKind').value === 'จุดเสี่ยง';
+  $('#riskFields').classList.toggle('hide', !isRisk);
+  const lik = +$('#fLik').value, sev = +$('#fSev').value, legal = $('#fLegal').checked;
+  const {score:s, level} = admScore(lik, sev, legal);
+  $('#fPreview').innerHTML = `${riskBox({kind:'จุดเสี่ยง', score:s, level})}<span>${s ? `คะแนนความเสี่ยง ${s} · เสี่ยง${level}` : 'ยังไม่ประเมิน ใช้น้ำหนัก ' + defW() + ' ในการคิดคะแนนสาขา'}</span>`;
+}
+function readItemForm(){
+  const id = $('#itemForm').dataset.id;
+  const data = {id: id || undefined, kind: $('#fKind').value, method: $('#fMethod').value, stage: $('#fStage').value,
+    topic: $('#fTopic').value.trim(), text: $('#fText').value.trim(), howto: $('#fHow').value.trim(), docs: $('#fDocs').value.trim(),
+    sample: $('#fSample').value.trim(), lik: +$('#fLik').value, sev: +$('#fSev').value, legal: $('#fLegal').checked,
+    impact: $('#fImpact').value.trim(), action: $('#fAction').value.trim(), active: $('#fActive').checked};
+  if (data.kind !== 'จุดเสี่ยง') Object.assign(data, {lik:0, sev:0, legal:false});
+  if (!id) {   // วางต่อจากข้อสุดท้ายที่หัวข้อเดียวกัน เพื่อให้เรียงอยู่ด้วยกันในชีต
+    const same = adm().items.filter(x => x.stage === data.stage);
+    const t = same.filter(x => x.topic === data.topic);
+    const ref = (t.length ? t : same)[(t.length ? t : same).length - 1];
+    if (ref) data.after = ref.id;
+  }
+  return data;
+}
+
+function vSetStages(){
+  const g = adm().groups.map(g => `<section class="group"><div class="group-h"><b>${esc(g.name)}</b>
+      <button class="linkbtn" data-editgroup="${g.code}">แก้ชื่อกลุ่ม</button></div>
+    <div class="adm-list">${g.stages.map(s => { const n = adm().items.filter(i => i.stage === s.code && i.active).length;
+      return `<button class="adm-item" data-editstage="${s.code}"><span class="risk un">${n}</span><span><span>${esc(s.name)}</span><span class="k">${esc(s.desc || 'ยังไม่มีคำอธิบาย')}</span></span></button>`; }).join('') || '<div class="empty" style="padding:16px">ยังไม่มีขั้นตอน</div>'}</div>
+    <div style="margin-top:8px"><button class="btn sm" data-addstage="${g.code}">+ เพิ่มขั้นตอนในกลุ่มนี้</button></div></section>`).join('');
+  return g + `<div style="margin-top:20px"><button class="btn" data-addgroup="1">+ เพิ่มกลุ่มใหม่</button></div>
+    <p class="note">ตัวเลขคือจำนวนข้อที่ใช้งานในขั้นตอนนั้น ลบขั้นตอนได้เมื่อไม่มีข้อตรวจเหลืออยู่</p>`;
+}
+function stageForm(code, group){
+  const s = code ? admStage(code) : {name:'', desc:'', reports:[], group};
+  const gOpt = adm().groups.map(g => `<option value="${g.code}" ${g.code===s.group?'selected':''}>${esc(g.name)}</option>`).join('');
+  openSheet(`<small>${code ? 'แก้ไขขั้นตอน' : 'เพิ่มขั้นตอน'}</small><b>${esc(s.name || 'ขั้นตอนใหม่')}</b>`, `<form class="form" id="stageForm" data-code="${esc(code || '')}">
+    <label class="f" for="sName">ชื่อขั้นตอน *</label><input class="t" id="sName" value="${esc(s.name)}" required>
+    <label class="f" for="sGroup">อยู่ในกลุ่ม</label><select class="t" id="sGroup">${gOpt}</select>
+    <label class="f" for="sDesc">คำอธิบายสั้น ๆ (แสดงในปุ่ม i)</label><input class="t" id="sDesc" value="${esc(s.desc)}">
+    <label class="f" for="sRep">รายงานที่ควรเตรียม (บรรทัดละรายงาน)</label><textarea class="t" id="sRep" style="min-height:90px">${esc((s.reports||[]).join('\n'))}</textarea>
+  </form>`, `<div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+    ${code ? '<button class="btn danger" data-delstage="1">ลบขั้นตอน</button>' : '<span></span>'}
+    <button class="btn primary" data-savestage="1" style="min-width:120px">บันทึก</button></div>`);
+}
+function groupForm(code){
+  const g = code ? adm().groups.find(x => x.code === code) : {name:''};
+  openSheet(`<small>${code ? 'แก้ไขกลุ่ม' : 'เพิ่มกลุ่ม'}</small><b>${esc(g.name || 'กลุ่มใหม่')}</b>`, `<form class="form" id="groupForm" data-code="${esc(code || '')}">
+    <label class="f" for="gName">ชื่อกลุ่ม *</label><input class="t" id="gName" value="${esc(g.name)}" required></form>`,
+    `<div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+    ${code ? '<button class="btn danger" data-delgroup="1">ลบกลุ่ม</button>' : '<span></span>'}
+    <button class="btn primary" data-savegroup="1" style="min-width:120px">บันทึก</button></div>`);
+}
+function vSetBranches(){
+  return `<div class="panel" style="margin-top:4px">
+    <label class="f" for="brList" style="margin-top:0">รายชื่อสาขา (บรรทัดละสาขา)</label>
+    <textarea class="t" id="brList" style="min-height:140px">${esc(adm().branches.join('\n'))}</textarea>
+    <div style="margin-top:10px"><button class="btn primary" data-savebranches="1">บันทึกรายชื่อสาขา</button></div></div>
+    <p class="note">รอบตรวจเดิมของสาขาที่เอาออกยังอยู่ในประวัติ</p>`;
+}
+
 /* ---------- actions ---------- */
 async function openRound(id){
   const r = S.data.rounds.find(x => x.round_id === id) || {round_id:id, branch:id.split('-').slice(1).join('-'), date:id.slice(0,4)+'-'+id.slice(4,6)+'-'+id.slice(6,8), status:'กำลังตรวจ'};
@@ -592,6 +799,7 @@ async function openRound(id){
   S.results = cached?.results || {}; S.claims = cached?.claims || {};
   go('round', {round:r, filter:'all'});
   loadRound();
+  loadInit().then(() => { if (S.view === 'round') render(); }).catch(() => {});   // รับรายการตรวจที่แก้จากเมนูตั้งค่า
 }
 function setResult(itemId, patch){
   const prev = S.results[itemId] || {item_id:itemId};
@@ -615,6 +823,14 @@ async function claim(stage, user){
 }
 
 document.addEventListener('submit', async e => {
+  if (e.target.id === 'adminForm'){
+    e.preventDefault();
+    const val = $('#adminPinIn').value.trim(); const btn = $('#adminGo'); btn.disabled = true;
+    try { S.adminPin = val; await apiPost('adminCheck'); await loadAdmin(); closeSheet(); go('settings'); }
+    catch (err){ S.adminPin = ''; btn.disabled = false; toast(err.message); $('#adminPinIn').select(); }
+    return;
+  }
+  if (['itemForm','stageForm','groupForm'].includes(e.target.id)) { e.preventDefault(); return; }
   if (e.target.id !== 'loginForm') return;
   e.preventDefault();
   S.cfg.user = $('#u').value.trim(); S.cfg.pin = $('#p').value.trim();
@@ -628,6 +844,44 @@ document.addEventListener('click', async e => {
   const t = e.target.closest('button, a'); if (!t) return;
   const d = t.dataset;
   if (d.close){ closeSheet(); return; }
+  /* settings */
+  if (d.settab){ S.setTab = d.settab; render(); return; }
+  if (d.edit){ itemForm(d.edit); return; }
+  if (d.additem){ itemForm(null); return; }
+  if (d.saveitem){
+    const data = readItemForm();
+    if (!data.text) { toast('ใส่ข้อความสิ่งที่ตรวจก่อน'); $('#fText').focus(); return; }
+    if (await admSave('saveItem', {data}, data.id ? 'บันทึกการแก้ไขแล้ว' : 'เพิ่มสิ่งที่ต้องตรวจแล้ว')) { if (!data.id) S.setStage = data.stage; render(); }
+    return;
+  }
+  if (d.delitem){
+    if (!confirm('ลบข้อนี้ถาวร? ถ้าแค่ไม่ต้องตรวจแล้ว ให้เอาเครื่องหมาย "ใช้งานข้อนี้" ออกแทน')) return;
+    admSave('deleteItem', {id: $('#itemForm').dataset.id}, 'ลบแล้ว'); return;
+  }
+  if (d.editstage){ stageForm(d.editstage); return; }
+  if (d.addstage){ stageForm(null, d.addstage); return; }
+  if (d.savestage){
+    const data = {code: $('#stageForm').dataset.code || undefined, name: $('#sName').value.trim(), group: $('#sGroup').value,
+      desc: $('#sDesc').value.trim(), reports: $('#sRep').value.split('\n').map(s => s.trim()).filter(Boolean)};
+    if (!data.name) { toast('ใส่ชื่อขั้นตอนก่อน'); return; }
+    admSave('saveStage', {data}, 'บันทึกขั้นตอนแล้ว'); return;
+  }
+  if (d.delstage){ if (!confirm('ลบขั้นตอนนี้?')) return; admSave('deleteStage', {code: $('#stageForm').dataset.code}, 'ลบขั้นตอนแล้ว'); return; }
+  if (d.editgroup){ groupForm(d.editgroup); return; }
+  if (d.addgroup){ groupForm(null); return; }
+  if (d.savegroup){
+    const data = {code: $('#groupForm').dataset.code || undefined, name: $('#gName').value.trim()};
+    if (!data.name) { toast('ใส่ชื่อกลุ่มก่อน'); return; }
+    admSave('saveGroup', {data}, 'บันทึกกลุ่มแล้ว'); return;
+  }
+  if (d.delgroup){ if (!confirm('ลบกลุ่มนี้?')) return; admSave('deleteGroup', {code: $('#groupForm').dataset.code}, 'ลบกลุ่มแล้ว'); return; }
+  if (d.savebranches){
+    const list = $('#brList').value.split('\n').map(s => s.trim()).filter(Boolean);
+    t.disabled = true;
+    try { await apiPost('saveBranches', {data: list}); await loadAdmin(); render(); toast('บันทึกรายชื่อสาขาแล้ว'); }
+    catch (err){ toast(err.message); t.disabled = false; }
+    return;
+  }
   if (d.detail){ itemSheet(d.detail); return; }
   if (d.info){ stageSheet(d.info); return; }
   if (d.howscore){ scoreSheet(); return; }
@@ -641,7 +895,7 @@ document.addEventListener('click', async e => {
   if (d.unclaim){ claim(d.unclaim, ''); return; }
   if (t.id === 'backRound'){ go('round'); return; }
   if (t.id === 'toReport'){ go('report'); return; }
-  if (t.id === 'reload'){ loadRound(); toast('ดึงข้อมูลล่าสุดแล้ว'); return; }
+  if (t.id === 'reload'){ try { await loadInit(); } catch(err){} loadRound(); toast('ดึงข้อมูลล่าสุดแล้ว'); return; }
   if (t.id === 'toggleStatus'){
     const st = S.round.status === 'ปิดรอบแล้ว' ? 'กำลังตรวจ' : 'ปิดรอบแล้ว';
     if (st === 'ปิดรอบแล้ว' && !confirm('ปิดรอบตรวจนี้? ยังแก้ผลได้ภายหลัง')) return;
@@ -666,8 +920,13 @@ document.addEventListener('click', async e => {
   }
 });
 
+document.addEventListener('change', e => {
+  if (e.target.id === 'admStage'){ S.setStage = e.target.value; S.setQuery = ''; const q = $('#admQ'); if (q) q.value = ''; renderAdmList(); return; }
+  if (e.target.closest('#itemForm')) updatePreview();
+});
 let typeT = null;
 document.addEventListener('input', e => {
+  if (e.target.id === 'admQ'){ S.setQuery = e.target.value; renderAdmList(); return; }
   const f = e.target.dataset.field; if (!f) return;
   const id = e.target.closest('.item').dataset.item;
   S.results[id] = {...(S.results[id] || {item_id:id}), [f]: e.target.value};

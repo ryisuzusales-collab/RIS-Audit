@@ -57,6 +57,7 @@ h3{font-size:15px;margin:22px 0 8px;font-weight:600;color:var(--muted)}
 .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
 .btn.block{width:100%}
 .btn.sm{padding:5px 10px;font-size:13px}
+.linkbtn{background:none;border:0;padding:0;color:var(--brand);font-weight:500;font-size:13px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
 input.t,select.t,textarea.t{width:100%;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:9px 11px}
@@ -70,6 +71,14 @@ textarea.t{min-height:64px;resize:vertical}
 .chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:4px 12px;font-size:13px;white-space:nowrap}
 .chip.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
 
+/* risk score square */
+.risk{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 5px;border-radius:6px;font-weight:700;font-size:14px;line-height:1;font-variant-numeric:tabular-nums;vertical-align:middle}
+.risk.hi{background:var(--fail);color:#fff}
+.risk.mid{background:var(--obs);color:#fff}
+.risk.lo{background:var(--pass);color:#fff}
+.risk.un{background:var(--soft);color:var(--muted);border:1px dashed var(--line)}
+.risk.big{min-width:56px;height:56px;font-size:26px;border-radius:10px}
+
 /* round cards */
 .round{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
 .round .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
@@ -82,8 +91,7 @@ textarea.t{min-height:64px;resize:vertical}
 .tag{font-size:12px;padding:1px 8px;border-radius:99px;background:var(--soft);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
 .tag.done{background:var(--pass-bg);color:var(--pass);border-color:transparent}
 .tag.hi{background:var(--fail-bg);color:var(--fail);border-color:transparent}
-.tag.mid{background:var(--obs-bg);color:var(--obs);border-color:transparent}
-.tag.lo{background:var(--pass-bg);color:var(--pass);border-color:transparent}
+.tag.law{background:var(--ink);color:var(--card);border-color:transparent}
 
 /* stage list */
 .group{margin-top:18px}
@@ -93,21 +101,17 @@ textarea.t{min-height:64px;resize:vertical}
 .stage .go{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0}
 .stage .go span{display:block}
 .stage .ring{width:38px;height:38px;flex:none}
+.info{flex:none;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--soft);color:var(--muted);font-weight:700;font-size:15px;font-family:Georgia,serif;font-style:italic}
 .who{font-size:12px;color:var(--muted)}
 .who.me{color:var(--brand);font-weight:600}
 
 /* items */
-.topic{margin:22px 0 8px}
-.topic b{font-size:15px}
-.topic details{font-size:13px;color:var(--muted);margin-top:2px}
-.topic summary{cursor:pointer;color:var(--muted)}
-.topic dl{margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
-.topic dt{color:var(--muted)} .topic dd{margin:0;color:var(--ink)}
+.topic{margin:22px 0 8px;font-weight:600;font-size:15px}
 .item{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:var(--r);padding:12px 12px 12px 13px;margin-bottom:8px}
 .item.lv-hi{border-left-color:var(--fail)} .item.lv-mid{border-left-color:var(--obs)} .item.lv-lo{border-left-color:var(--pass)}
-.item .txt{font-weight:500;padding-right:74px;min-height:24px}
-.item .meta{font-size:12.5px;color:var(--muted);margin-top:3px}
-.stamp{position:absolute;top:10px;right:10px;font-size:13px;font-weight:700;padding:1px 8px;border:2px double currentColor;border-radius:6px;transform:rotate(-7deg);letter-spacing:.02em;background:var(--card)}
+.item .txt{display:block;width:100%;text-align:left;background:none;border:0;padding:0 74px 0 0;font-weight:500;min-height:24px}
+.item .meta{font-size:12.5px;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.stamp{position:absolute;top:10px;right:10px;font-size:13px;font-weight:700;padding:1px 8px;border:2px double currentColor;border-radius:6px;transform:rotate(-7deg);background:var(--card)}
 .stamp.pass{color:var(--pass)} .stamp.obs{color:var(--obs)} .stamp.fail{color:var(--fail)} .stamp.na{color:var(--na)}
 @media (prefers-reduced-motion:no-preference){.stamp.new{animation:thud .28s ease-out}}
 @keyframes thud{0%{transform:rotate(-7deg) scale(1.6);opacity:0}70%{transform:rotate(-7deg) scale(.94);opacity:1}100%{transform:rotate(-7deg) scale(1)}}
@@ -120,9 +124,37 @@ textarea.t{min-height:64px;resize:vertical}
 .more{margin-top:8px;display:none}
 .item.open .more{display:block}
 .more .two{display:grid;grid-template-columns:1fr 1.6fr;gap:8px}
-.foot{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;gap:8px}
+.foot{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .foot .pend{color:var(--obs)}
 .need{color:var(--fail);font-size:12px}
+
+/* popup (bottom sheet on phones) */
+dialog.sheet{border:0;padding:0;width:100%;max-width:640px;max-height:88vh;margin:auto auto 0;border-radius:16px 16px 0 0;background:var(--card);color:var(--ink);box-shadow:0 -6px 30px rgba(0,0,0,.25)}
+dialog.sheet[open]{display:flex;flex-direction:column}
+dialog.sheet::backdrop{background:rgba(10,15,20,.55)}
+@media (min-width:700px){dialog.sheet{margin:auto;border-radius:14px;max-height:84vh}}
+@media (prefers-reduced-motion:no-preference){dialog.sheet[open]{animation:up .2s ease-out}}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+.sh-h{display:flex;gap:10px;align-items:flex-start;padding:14px 14px 10px;border-bottom:1px solid var(--line)}
+.sh-h .t{flex:1;min-width:0}
+.sh-h .t small{display:block;color:var(--muted);font-size:12.5px;line-height:1.4}
+.sh-h .t b{display:block;font-size:17px;line-height:1.4;margin-top:2px}
+.sh-x{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:var(--soft);font-size:18px;line-height:1}
+.sh-b{overflow-y:auto;padding:4px 14px 16px;-webkit-overflow-scrolling:touch}
+.sh-f{border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+.sh-f .res{margin-top:0}
+.sec{margin-top:14px}
+.sec h4{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--muted)}
+.sec p{margin:0}
+ol.steps{margin:0;padding-left:22px}
+ol.steps li{margin:3px 0}
+ul.plain{margin:0;padding-left:18px}
+.scorebox{display:flex;gap:12px;align-items:center;background:var(--soft);border-radius:10px;padding:10px 12px;margin-top:12px}
+.scorebox .calc{font-size:13.5px;line-height:1.5}
+.scorebox .calc b{font-size:15px}
+.plist button{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:9px 0}
+.plist button:last-child{border-bottom:0}
+.plist .k{font-size:12px;color:var(--muted);display:block}
 
 /* report */
 .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
@@ -135,17 +167,19 @@ table.t th{font-weight:600;color:var(--muted);font-size:13px}
 table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
 .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
 .find{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;break-inside:avoid}
-.find .h{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.find .h{display:flex;gap:10px;align-items:flex-start}
+.find .h b{flex:1}
 
 .empty{text-align:center;padding:36px 12px;color:var(--muted)}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--card);padding:9px 16px;border-radius:9px;font-size:14px;z-index:50;max-width:90vw}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--card);padding:9px 16px;border-radius:9px;font-size:14px;z-index:60;max-width:90vw}
 .bottom{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));z-index:15}
 .hide{display:none!important}
 
 @media print{
   body{background:#fff;color:#000;padding:0}
-  .bar,.bottom,.noprint,.line-tip{display:none!important}
+  .bar,.bottom,.noprint,.line-tip,dialog{display:none!important}
   .find,.kpi div,.tbl{border-color:#bbb}
+  .risk{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
 </head>
@@ -158,10 +192,11 @@ table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
 </div></header>
 <main class="wrap" id="app"></main>
 <div class="bottom hide" id="bottom"><div class="wrap" id="bottomInner"></div></div>
+<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle"></dialog>
 
 <script>
 /* ============ ตั้งค่า ============ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbztihj-mqNwIkgozjII4XXeOQ-TOKFiu2y2eT2xXmU3AnrRBTK5ErlfIPcYSx1_7tsGug/exec';   // วาง URL Web App ของ Apps Script (ลงท้าย /exec) ถ้าเว้นว่าง แอปจะถามตอนเข้าใช้ครั้งแรก
+const API_URL = 'https://script.google.com/macros/s/AKfycbztihj-mqNwIkgozjII4XXeOQ-TOKFiu2y2eT2xXmU3AnrRBTK5ErlfIPcYSx1_7tsGug/exec';   // URL Web App ของ Apps Script (ลงท้าย /exec)
 const POLL_MS = 30000;
 /* ================================= */
 
@@ -170,6 +205,7 @@ const RES = [
 ];
 const RC = Object.fromEntries(RES.map(r => [r.v, r.c]));
 const LV = {'มาก':'hi','ปานกลาง':'mid','น้อย':'lo'};
+const LIK = ['', 'น้อย', 'ปานกลาง', 'มาก'];
 
 const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
@@ -183,7 +219,8 @@ const S = {
   view: 'login', tab: 'rounds',
   round: null, results: {}, claims: {},
   stage: null, filter: 'all', stageFilter: 'all',
-  openItem: null, justStamped: null, syncing: false, syncErr: false
+  openItem: null, justStamped: null, syncing: false, syncErr: false,
+  sheetItem: null
 };
 if (API_URL) S.cfg.api = API_URL;
 
@@ -206,16 +243,24 @@ async function api(action, params = {}){
 
 /* ---------- derived helpers ---------- */
 const items = () => S.data?.items || [];
-const stageName = code => { for (const g of S.data.groups) for (const s of g.stages) if (s.code === code) return s.name; return code; };
-const groupOfStage = code => S.data.groups.find(g => g.stages.some(s => s.code === code));
+const itemById = id => items().find(i => i.id === id);
+const stageObj = code => { for (const g of S.data.groups) for (const s of g.stages) if (s.code === code) return s; return {code, name:code}; };
+const stageName = code => stageObj(code).name;
 const itemsOfStage = code => items().filter(i => i.stage === code);
+const defW = () => S.data?.scoring?.defaultWeight ?? 3;
+const weightOf = i => i.weight || i.score || defW();
 function tally(list){
-  const t = {total:list.length, done:0, pass:0, obs:0, fail:0, na:0, highFail:0};
+  const t = {total:list.length, done:0, pass:0, obs:0, fail:0, na:0, highFail:0, w:0, wGot:0};
   list.forEach(i => { const r = S.results[i.id]?.result; if(!r) return; t.done++;
-    if (r === 'ผ่าน') t.pass++; else if (r === 'ข้อสังเกต') t.obs++; else if (r === 'ไม่ผ่าน'){ t.fail++; if(i.level === 'มาก') t.highFail++; } else t.na++; });
+    if (r === 'ไม่เกี่ยวข้อง'){ t.na++; return; }
+    const w = weightOf(i); t.w += w;
+    if (r === 'ผ่าน'){ t.pass++; t.wGot += w; }
+    else if (r === 'ข้อสังเกต'){ t.obs++; t.wGot += w / 2; }
+    else if (r === 'ไม่ผ่าน'){ t.fail++; if (i.level === 'มาก') t.highFail++; } });
   return t;
 }
-const score = t => { const d = t.pass + t.obs + t.fail; return d ? Math.round((t.pass + t.obs * .5) / d * 100) : null; };
+const score = t => t.w ? Math.round(t.wGot / t.w * 100) : null;
+const pct = n => n === null ? '–' : n + '%';
 function progBar(t){
   const w = n => t.total ? (n / t.total * 100) + '%' : '0';
   return `<div class="prog" role="img" aria-label="ตรวจแล้ว ${t.done} จาก ${t.total}"><i class="p" style="width:${w(t.pass)}"></i><i class="o" style="width:${w(t.obs)}"></i><i class="x" style="width:${w(t.fail)}"></i><i class="n" style="width:${w(t.na)}"></i></div>`;
@@ -224,6 +269,15 @@ function ring(done, total){
   const r = 15, c = 2 * Math.PI * r, p = total ? done / total : 0;
   const col = p >= 1 ? 'var(--pass)' : 'var(--ink)';
   return `<svg class="ring" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="${r}" fill="none" stroke="var(--line)" stroke-width="4"/><circle cx="19" cy="19" r="${r}" fill="none" stroke="${col}" stroke-width="4" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p)}" transform="rotate(-90 19 19)" stroke-linecap="round"/><text x="19" y="23" text-anchor="middle" font-size="10" fill="var(--muted)">${done}</text></svg>`;
+}
+function riskBox(i, big){
+  if (i.kind !== 'จุดเสี่ยง') return '';
+  const cls = i.level ? LV[i.level] : 'un';
+  return `<span class="risk ${cls} ${big ? 'big' : ''}" title="คะแนนความเสี่ยง">${i.score || '–'}</span>`;
+}
+function riskLabel(i){
+  if (i.kind !== 'จุดเสี่ยง') return '<span class="tag">หัวข้อตรวจ</span>';
+  return (i.level ? `เสี่ยง${esc(i.level)}` : 'ยังไม่ประเมินความเสี่ยง') + (i.legal ? ' <span class="tag law">กฎหมาย</span>' : '');
 }
 
 /* ---------- offline queue ---------- */
@@ -263,11 +317,10 @@ async function loadRound(silent){
     const pend = pendingKeys(); const local = S.results;
     S.results = {};
     d.results.forEach(r => S.results[r.item_id] = r);
-    // อย่าทับสิ่งที่ยังส่งไม่ถึงเซิร์ฟเวอร์
     Object.values(local).forEach(r => { if (pend.has(S.round.round_id + '|' + r.item_id)) S.results[r.item_id] = r; });
     S.claims = {}; d.claims.forEach(c => S.claims[c.stage] = c.auditor);
     LS.set('ris_round_' + S.round.round_id, {results:S.results, claims:S.claims});
-    if (silent && S.openItem) return;  // ไม่ re-render ระหว่างพิมพ์
+    if (silent && S.openItem) return;
     render();
   }catch(e){ if(!silent) toast(e.message); }
 }
@@ -277,7 +330,7 @@ function stopPoll(){ clearInterval(pollT); }
 
 /* ---------- navigation ---------- */
 function go(view, extra = {}){
-  Object.assign(S, extra, {view}); 
+  Object.assign(S, extra, {view});
   if (view === 'round' || view === 'stage') startPoll(); else stopPoll();
   render(); window.scrollTo(0,0);
 }
@@ -289,8 +342,8 @@ $('#syncBtn').onclick = () => { if (S.queue.length) flush(); else toast('ทุ�
 
 /* ---------- views ---------- */
 function render(){
-  const app = $('#app'), back = $('#backBtn'), title = $('#title'), bottom = $('#bottom');
-  bottom.classList.add('hide'); back.classList.toggle('hide', !['round','stage','report'].includes(S.view));
+  const app = $('#app'), back = $('#backBtn'), title = $('#title');
+  $('#bottom').classList.add('hide'); back.classList.toggle('hide', !['round','stage','report'].includes(S.view));
   updateSync();
   if (S.view === 'login') { title.innerHTML = 'ตรวจสอบภายใน RIS'; app.innerHTML = vLogin(); return; }
   if (S.view === 'home') { title.innerHTML = `ตรวจสอบภายใน RIS<small>${esc(S.cfg.user)}</small>`; app.innerHTML = vHome(); return; }
@@ -350,9 +403,9 @@ function vOverview(){
     const r = latest[b]; if (!r) return `<tr><td>${esc(b)}</td><td colspan="5" class="muted">ยังไม่เคยตรวจ</td></tr>`;
     const t = {...r.stats, total:r.total}; const sc = score(t);
     return `<tr><td><a href="#" data-round="${esc(r.round_id)}">${esc(b)}</a></td><td>${thDate(r.date)}</td><td class="n">${Math.round(t.done/t.total*100)}%</td>
-      <td class="n">${sc ?? '–'}${sc!==null?'%':''}</td><td class="n" style="color:var(--fail)">${t.fail}</td><td class="n">${t.highFail ? `<span class="tag hi">${t.highFail}</span>` : '0'}</td></tr>`;
+      <td class="n">${pct(sc)}</td><td class="n" style="color:var(--fail)">${t.fail}</td><td class="n">${t.highFail ? `<span class="tag hi">${t.highFail}</span>` : '0'}</td></tr>`;
   }).join('');
-  return `<p class="small muted">ใช้รอบตรวจล่าสุดของแต่ละสาขา คะแนน = (ผ่าน + ข้อสังเกต×0.5) ÷ ข้อที่ประเมินได้</p>
+  return `<p class="small muted">ใช้รอบตรวจล่าสุดของแต่ละสาขา คะแนนถ่วงน้ำหนักตามคะแนนความเสี่ยง <button class="linkbtn" data-howscore="1">คิดอย่างไร</button></p>
   <div class="tbl"><table class="t"><thead><tr><th>สาขา</th><th>ตรวจล่าสุด</th><th>ความคืบหน้า</th><th>คะแนน</th><th>ไม่ผ่าน</th><th>เสี่ยงมาก</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
@@ -373,12 +426,13 @@ function vRound(){
     if (!st.length) return '';
     const gt = tally(items().filter(i => i.group === g.code));
     return `<section class="group"><div class="group-h"><b>${esc(g.name)}</b><span class="small muted">${gt.done}/${gt.total}</span></div>
-      ${g.code === 'D' ? '<p class="small muted" style="margin:-4px 0 8px">ทำจาก Google Drive ได้ก่อนลงสาขา</p>' : ''}
       ${st.map(s => {
-        const t = tally(itemsOfStage(s.code)); const who = S.claims[s.code];
+        const list = itemsOfStage(s.code); const t = tally(list); const who = S.claims[s.code];
+        const hi = list.filter(i => i.level === 'มาก').length;
         return `<div class="stage">${ring(t.done, t.total)}
           <button class="go" data-stage="${s.code}"><span style="font-weight:500">${esc(s.name)}</span>
-          <span class="who ${who===me?'me':''}">${who ? (who===me ? 'คุณรับผิดชอบส่วนนี้' : 'ผู้ตรวจ: ' + esc(who)) : 'ยังไม่มีผู้รับผิดชอบ'} · ${t.done}/${t.total} ข้อ${t.fail ? ` · <span style="color:var(--fail)">ไม่ผ่าน ${t.fail}</span>` : ''}</span></button>
+          <span class="who ${who===me?'me':''}">${who ? (who===me ? 'คุณรับผิดชอบส่วนนี้' : 'ผู้ตรวจ: ' + esc(who)) : 'ยังไม่มีผู้รับผิดชอบ'} · ${t.done}/${t.total} ข้อ${hi ? ` · เสี่ยงมาก ${hi}` : ''}${t.fail ? ` · <span style="color:var(--fail)">ไม่ผ่าน ${t.fail}</span>` : ''}</span></button>
+          <button class="info" data-info="${s.code}" aria-label="ส่วนนี้ตรวจอะไรบ้าง">i</button>
           ${who === me ? `<button class="btn sm" data-unclaim="${s.code}">ปล่อย</button>` : !who ? `<button class="btn sm" data-claim="${s.code}">รับตรวจ</button>` : ''}
         </div>`; }).join('')}</section>`;
   }).join('');
@@ -407,16 +461,12 @@ function vStage(){
   });
   let html = `<div class="row" style="margin-top:12px;justify-content:space-between">
       <span class="who ${who===me?'me':''}">${who ? (who===me?'คุณรับผิดชอบส่วนนี้':'ผู้ตรวจ: '+esc(who)) : 'ยังไม่มีผู้รับผิดชอบ'}</span>
-      ${!who ? `<button class="btn sm" data-claim="${S.stage}">รับตรวจส่วนนี้</button>` : ''}</div>
+      <span class="row">${!who ? `<button class="btn sm" data-claim="${S.stage}">รับตรวจส่วนนี้</button>` : ''}
+      <button class="btn sm" data-info="${S.stage}">ส่วนนี้ตรวจอะไรบ้าง</button></span></div>
     <div class="chips" style="margin-top:8px">${chips}</div>`;
   let lastTopic = null;
   shown.forEach(i => {
-    if (i.topic !== lastTopic){
-      lastTopic = i.topic;
-      html += `<div class="topic"><b>${esc(i.topic)}</b><details><summary>เอกสารและปริมาณการตรวจ</summary><dl>
-        ${i.docs ? `<dt>เอกสาร</dt><dd>${esc(i.docs)}</dd>` : ''}<dt>วิธีตรวจ</dt><dd>${esc(i.method)}</dd>
-        ${i.sample ? `<dt>ปริมาณ</dt><dd>${esc(i.sample)}</dd>` : ''}</dl></details></div>`;
-    }
+    if (i.topic !== lastTopic){ lastTopic = i.topic; html += `<div class="topic">${esc(i.topic)}</div>`; }
     const r = S.results[i.id] || {};
     const cls = r.result ? RC[r.result] : '';
     const isPend = pend.has(S.round.round_id + '|' + i.id);
@@ -424,9 +474,8 @@ function vStage(){
     const needNote = (r.result === 'ไม่ผ่าน' || r.result === 'ข้อสังเกต') && !r.note;
     html += `<article class="item ${i.level ? 'lv-' + LV[i.level] : ''} ${open ? 'open' : ''}" data-item="${esc(i.id)}">
       ${r.result ? `<span class="stamp ${cls} ${S.justStamped===i.id?'new':''}">${esc(r.result)}</span>` : ''}
-      <div class="txt">${esc(i.text)}</div>
-      <div class="meta">${i.kind === 'จุดเสี่ยง' ? (i.level ? `<span class="tag ${LV[i.level]}">เสี่ยง${esc(i.level)}${i.legal ? ' ตามกฎหมาย' : ''}</span> ` : '<span class="tag">จุดเสี่ยง ยังไม่ประเมินระดับ</span> ') : ''}
-        ${i.impact ? 'ผลกระทบ: ' + esc(i.impact) : ''}${i.impact && i.action ? ' · ' : ''}${i.action ? 'แนวทาง: ' + esc(i.action) : ''}</div>
+      <button class="txt" data-detail="${esc(i.id)}">${esc(i.text)}</button>
+      <div class="meta">${riskBox(i)} ${riskLabel(i)} <button class="linkbtn" data-detail="${esc(i.id)}">ตรวจอะไรบ้าง</button></div>
       <div class="res">${RES.map(x => `<button class="${x.c} ${r.result===x.v?'on':''}" data-set="${x.v}" aria-pressed="${r.result===x.v}">${x.v}</button>`).join('')}</div>
       <div class="more">
         <label class="f">บันทึกสิ่งที่พบ${needNote ? ' <span class="need">ควรระบุเมื่อไม่ผ่านหรือมีข้อสังเกต</span>' : ''}</label>
@@ -456,23 +505,84 @@ function vReport(){
   const all = tally(items()); const sc = score(all);
   const auditors = [...new Set(Object.values(S.results).map(r => r.auditor).filter(Boolean))];
   const gRows = S.data.groups.map(g => { const t = tally(items().filter(i => i.group === g.code)); const s = score(t);
-    return `<tr><td>${esc(g.name)}</td><td class="n">${t.done}/${t.total}</td><td class="n">${t.pass}</td><td class="n">${t.obs}</td><td class="n">${t.fail}</td><td class="n">${s ?? '–'}${s!==null?'%':''}</td></tr>`; }).join('');
+    return `<tr><td>${esc(g.name)}</td><td class="n">${t.done}/${t.total}</td><td class="n">${t.pass}</td><td class="n">${t.obs}</td><td class="n">${t.fail}</td><td class="n">${pct(s)}</td></tr>`; }).join('');
   const finds = items().filter(i => ['ไม่ผ่าน','ข้อสังเกต'].includes(S.results[i.id]?.result))
-    .sort((a,b) => (S.results[a.id].result === 'ไม่ผ่าน' ? 0 : 1) - (S.results[b.id].result === 'ไม่ผ่าน' ? 0 : 1) || b.score - a.score);
+    .sort((a,b) => (S.results[a.id].result === 'ไม่ผ่าน' ? 0 : 1) - (S.results[b.id].result === 'ไม่ผ่าน' ? 0 : 1) || weightOf(b) - weightOf(a));
   return `<div class="row noprint" style="margin-top:12px"><button class="btn sm" onclick="window.print()">พิมพ์ / บันทึกเป็น PDF</button></div>
   <h2>สาขา${esc(S.round.branch)} ตรวจวันที่ ${thDate(S.round.date)}</h2>
   <p class="small muted">ผู้ตรวจ: ${auditors.map(esc).join(', ') || '–'}</p>
-  <div class="panel row" style="justify-content:space-between"><div><div class="score-big">${sc ?? '–'}${sc!==null?'%':''}</div><div class="small muted">คะแนนการควบคุม</div></div>
+  <div class="panel row" style="justify-content:space-between"><div><div class="score-big">${pct(sc)}</div><div class="small muted">คะแนนการควบคุม (ถ่วงน้ำหนักความเสี่ยง)</div></div>
     <div style="flex:1;min-width:160px">${progBar(all)}<div class="small muted">ตรวจแล้ว ${all.done} จาก ${all.total} ข้อ</div></div></div>
   <div class="kpi"><div><b style="color:var(--pass)">${all.pass}</b>ผ่าน</div><div><b style="color:var(--obs)">${all.obs}</b>ข้อสังเกต</div><div><b style="color:var(--fail)">${all.fail}</b>ไม่ผ่าน</div><div><b>${all.highFail}</b>เสี่ยงมาก ไม่ผ่าน</div></div>
-  <h3>แยกตามกลุ่มการตรวจ</h3>
+  <p class="small muted noprint">ข้อที่คะแนนความเสี่ยงสูงมีน้ำหนักมากกว่า ผ่านได้เต็ม ข้อสังเกตได้ครึ่ง ไม่ผ่านได้ 0 <button class="linkbtn" data-howscore="1">ดูวิธีคิด</button></p>
+  <h3>แยกตามฝ่าย</h3>
   <div class="tbl"><table class="t"><thead><tr><th>กลุ่ม</th><th>ตรวจ</th><th>ผ่าน</th><th>สังเกต</th><th>ไม่ผ่าน</th><th>คะแนน</th></tr></thead><tbody>${gRows}</tbody></table></div>
-  <h3>ประเด็นที่พบ (${finds.length})</h3>
-  ${finds.map(i => { const r = S.results[i.id]; return `<div class="find"><div class="h"><b>${esc(i.text)}</b><span class="stamp ${RC[r.result]}" style="position:static;flex:none">${esc(r.result)}</span></div>
-    <div class="small muted">${esc(i.topic)} · ${esc(stageName(i.stage))}${i.level ? ` · <span class="tag ${LV[i.level]}">เสี่ยง${esc(i.level)}</span>` : ''}</div>
+  <h3>ประเด็นที่พบ (${finds.length}) เรียงตามความเสี่ยง</h3>
+  ${finds.map(i => { const r = S.results[i.id]; return `<div class="find"><div class="h">${riskBox(i) || '<span class="risk un">–</span>'}<b>${esc(i.text)}</b><span class="stamp ${RC[r.result]}" style="position:static;flex:none">${esc(r.result)}</span></div>
+    <div class="small muted" style="margin-top:4px">${esc(stageName(i.stage))} · ${esc(i.topic)}</div>
     ${r.note ? `<div style="margin-top:4px">${esc(r.note)}</div>` : '<div class="need">ยังไม่ได้บันทึกสิ่งที่พบ</div>'}
+    ${i.impact ? `<div class="small muted">ผลกระทบ: ${esc(i.impact)}</div>` : ''}
     ${i.action ? `<div class="small muted">แนวทางแก้ไข: ${esc(i.action)}</div>` : ''}
     <div class="small muted">ตรวจโดย ${esc(r.auditor)}${r.sample ? ' · จำนวนที่ตรวจ ' + esc(r.sample) : ''}${r.link ? ` · <a href="${esc(r.link)}" target="_blank" rel="noopener">หลักฐาน</a>` : ''}</div></div>`; }).join('') || '<div class="empty">ไม่มีประเด็นที่ไม่ผ่านหรือข้อสังเกต</div>'}`;
+}
+
+/* ---------- popups ---------- */
+const sheet = $('#sheet');
+function openSheet(head, body, foot){
+  sheet.innerHTML = `<div class="sh-h"><div class="t" id="sheetTitle">${head}</div><button class="sh-x" data-close="1" aria-label="ปิด">✕</button></div>
+    <div class="sh-b">${body}</div>${foot ? `<div class="sh-f">${foot}</div>` : ''}`;
+  if (!sheet.open) { try { sheet.showModal(); } catch(e){ sheet.setAttribute('open',''); } }
+  sheet.querySelector('.sh-b').scrollTop = 0;
+}
+function closeSheet(){ S.sheetItem = null; if (sheet.open) sheet.close(); }
+sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
+sheet.addEventListener('close', () => { S.sheetItem = null; });
+
+function itemSheet(id){
+  const i = itemById(id); if (!i) return;
+  S.sheetItem = id;
+  const steps = String(i.howto || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const sc = S.data.scoring || {legalBonus:5};
+  let calc;
+  if (i.kind !== 'จุดเสี่ยง') calc = `<div class="calc">หัวข้อตรวจตามปริมาณที่กำหนด<br><span class="muted">ใช้น้ำหนัก ${defW()} ในการคิดคะแนนสาขา</span></div>`;
+  else if (!i.lik || !i.sev) calc = `<div class="calc"><b>ยังไม่ได้ประเมินโอกาสหรือความรุนแรง</b>${i.legal ? `<br>เกี่ยวกับกฎหมาย +${sc.legalBonus}` : ''}<br><span class="muted">ใช้น้ำหนัก ${weightOf(i)} ในการคิดคะแนนสาขา จนกว่าทีมจะใส่ค่าในชีต</span></div>`;
+  else calc = `<div class="calc">โอกาส <b>${LIK[i.lik]}</b> (${i.lik}) × ความรุนแรง <b>${LIK[i.sev]}</b> (${i.sev})${i.legal ? ` + กฎหมาย ${sc.legalBonus}` : ''} = <b>${i.score}</b><br>ระดับความเสี่ยง <b>${esc(i.level)}</b></div>`;
+  const body = `
+    <div class="scorebox">${i.kind === 'จุดเสี่ยง' ? riskBox(i, true) : '<span class="risk un big">·</span>'}${calc}</div>
+    ${steps.length ? `<div class="sec"><h4>ตรวจอย่างไร</h4><ol class="steps">${steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></div>` : ''}
+    ${i.docs ? `<div class="sec"><h4>เอกสารที่ใช้</h4><p>${esc(i.docs)}</p></div>` : ''}
+    ${i.sample ? `<div class="sec"><h4>ปริมาณการตรวจ</h4><p>${esc(i.sample)}</p></div>` : ''}
+    <div class="sec"><h4>ตรวจที่</h4><p>${esc(i.method)}</p></div>
+    ${i.impact ? `<div class="sec"><h4>ผลกระทบถ้าเกิดขึ้น</h4><p>${esc(i.impact)}</p></div>` : ''}
+    ${i.action ? `<div class="sec"><h4>แนวทางแก้ไข</h4><p>${esc(i.action)}</p></div>` : ''}`;
+  const r = S.view === 'stage' && S.round ? (S.results[id]?.result || '') : null;
+  const foot = r === null ? '' : `<div class="res">${RES.map(x => `<button class="${x.c} ${r===x.v?'on':''}" data-sheetset="${x.v}">${x.v}</button>`).join('')}</div>`;
+  openSheet(`<small>${esc(stageName(i.stage))} · ${esc(i.topic)}</small><b>${esc(i.text)}</b>`, body, foot);
+}
+function stageSheet(code){
+  const s = stageObj(code); const list = itemsOfStage(code);
+  const docs = [...new Set(list.map(i => i.docs).filter(Boolean))];
+  const risks = list.filter(i => i.kind === 'จุดเสี่ยง');
+  const hi = risks.filter(i => i.level === 'มาก').length;
+  const sorted = [...list].sort((a,b) => (a.kind === b.kind ? 0 : a.kind === 'หัวข้อตรวจ' ? -1 : 1) || (b.score||0) - (a.score||0));
+  const body = `${s.desc ? `<p style="margin:12px 0 0">${esc(s.desc)}</p>` : ''}
+    <p class="small muted" style="margin:4px 0 0">${list.length} ข้อ: หัวข้อตรวจ ${list.length - risks.length} · จุดเสี่ยง ${risks.length}${hi ? ` (เสี่ยงมาก ${hi})` : ''}</p>
+    ${docs.length ? `<div class="sec"><h4>เอกสารที่ต้องใช้</h4><ul class="plain">${docs.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div>` : ''}
+    ${(s.reports||[]).length ? `<div class="sec"><h4>รายงานที่ควรเตรียม</h4><ul class="plain">${s.reports.map(d => `<li>${esc(d)}</li>`).join('')}</ul></div>` : ''}
+    <div class="sec"><h4>สิ่งที่ตรวจ (แตะเพื่อดูวิธีตรวจ)</h4><div class="plist">${sorted.map(i => `<button data-detail="${esc(i.id)}">${i.kind === 'จุดเสี่ยง' ? riskBox(i) : '<span class="risk un">✓</span>'}<span><span>${esc(i.text)}</span><span class="k">${esc(i.topic)}${i.sample && i.kind !== 'จุดเสี่ยง' ? ' · ' + esc(i.sample) : ''}</span></span></button>`).join('')}</div></div>`;
+  openSheet(`<small>ส่วนนี้ตรวจอะไรบ้าง</small><b>${esc(s.name)}</b>`, body,
+    S.view === 'round' ? `<button class="btn primary block" data-stage="${code}">เริ่มตรวจส่วนนี้</button>` : '');
+}
+function scoreSheet(){
+  const sc = S.data.scoring || {legalBonus:5, high:6, mid:3, defaultWeight:3};
+  openSheet('<b>คิดคะแนนอย่างไร</b>', `
+    <div class="sec"><h4>คะแนนความเสี่ยงของแต่ละข้อ</h4>
+      <p>โอกาสที่จะเกิด (น้อย 1 · ปานกลาง 2 · มาก 3) × ความรุนแรง (1 · 2 · 3) และบวก ${sc.legalBonus} ถ้าเกี่ยวกับกฎหมาย ตามสูตรเดิมในไฟล์ RIS</p>
+      <p class="muted small" style="margin-top:4px">${sc.high} ขึ้นไป = เสี่ยงมาก · ${sc.mid}–${sc.high - 1} = ปานกลาง · 1–${sc.mid - 1} = น้อย</p></div>
+    <div class="sec"><h4>คะแนนการควบคุมของสาขา</h4>
+      <p>แต่ละข้อมีน้ำหนักเท่ากับคะแนนความเสี่ยง หัวข้อตรวจทั่วไปและข้อที่ยังไม่ประเมินใช้น้ำหนัก ${sc.defaultWeight}</p>
+      <p style="margin-top:4px">ผ่าน ได้เต็มน้ำหนัก · ข้อสังเกต ได้ครึ่ง · ไม่ผ่าน ได้ 0 · ไม่เกี่ยวข้อง ไม่นับ</p>
+      <p class="muted small" style="margin-top:4px">ตัวอย่าง: ไม่ผ่านข้อเสี่ยง 9 ทำให้คะแนนลดมากกว่าไม่ผ่านข้อเสี่ยง 2 ประมาณ 4 เท่า</p></div>`);
 }
 
 /* ---------- actions ---------- */
@@ -488,6 +598,15 @@ function setResult(itemId, patch){
   const rec = {...prev, ...patch, item_id:itemId, auditor:S.cfg.user, updated_at:new Date().toISOString()};
   S.results[itemId] = rec;
   enqueue({round:S.round.round_id, item:itemId, result:rec.result || '', note:rec.note || '', sample:rec.sample || '', link:rec.link || ''});
+}
+function applyResult(id, val){
+  const cur = S.results[id]?.result;
+  const v = cur === val ? '' : val;
+  setResult(id, {result:v});
+  S.justStamped = v ? id : null;
+  if (v === 'ไม่ผ่าน' || v === 'ข้อสังเกต') S.openItem = id;
+  render();
+  if (S.openItem === id && v && !S.results[id].note) setTimeout(() => document.querySelector(`.item[data-item="${CSS.escape(id)}"] textarea`)?.focus(), 60);
 }
 async function claim(stage, user){
   S.claims[stage] = user; render();
@@ -508,11 +627,16 @@ document.addEventListener('submit', async e => {
 document.addEventListener('click', async e => {
   const t = e.target.closest('button, a'); if (!t) return;
   const d = t.dataset;
+  if (d.close){ closeSheet(); return; }
+  if (d.detail){ itemSheet(d.detail); return; }
+  if (d.info){ stageSheet(d.info); return; }
+  if (d.howscore){ scoreSheet(); return; }
+  if (d.sheetset){ const id = S.sheetItem; closeSheet(); applyResult(id, d.sheetset); return; }
   if (d.tab){ S.tab = d.tab; render(); return; }
   if (d.round){ e.preventDefault(); openRound(d.round); return; }
   if (d.filter){ S.filter = d.filter; render(); return; }
   if (d.sfilter){ S.stageFilter = d.sfilter; S.openItem = null; render(); return; }
-  if (d.stage){ go('stage', {stage:d.stage, stageFilter:'all', openItem:null}); return; }
+  if (d.stage){ closeSheet(); go('stage', {stage:d.stage, stageFilter:'all', openItem:null}); return; }
   if (d.claim){ claim(d.claim, S.cfg.user); return; }
   if (d.unclaim){ claim(d.unclaim, ''); return; }
   if (t.id === 'backRound'){ go('round'); return; }
@@ -537,16 +661,7 @@ document.addEventListener('click', async e => {
   const art = t.closest('.item');
   if (art){
     const id = art.dataset.item;
-    if (d.set){
-      const cur = S.results[id]?.result;
-      const val = cur === d.set ? '' : d.set;
-      setResult(id, {result:val});
-      S.justStamped = val ? id : null;
-      if (val === 'ไม่ผ่าน' || val === 'ข้อสังเกต') S.openItem = id;
-      render();
-      if (S.openItem === id && val && !S.results[id].note) setTimeout(() => document.querySelector(`.item[data-item="${CSS.escape(id)}"] textarea`)?.focus(), 50);
-      return;
-    }
+    if (d.set){ applyResult(id, d.set); return; }
     if (d.toggle){ S.openItem = S.openItem === id ? null : id; render(); return; }
   }
 });
